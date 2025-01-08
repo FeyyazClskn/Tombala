@@ -66,6 +66,7 @@ io.on('connection', (socket) => {
         lobbyData.drawnNumbers.push(newNumber);
 
         io.to(lobby).emit('newNumber', { number: newNumber });
+        console.log(`Sunucu: Çekilen sayı ${newNumber} lobisine gönderildi.`);
     });
 
     // Oyuncu ayrıldığında

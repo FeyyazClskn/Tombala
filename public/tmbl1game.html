@@ -136,9 +136,11 @@
         }
 
         drawButton.addEventListener('click', () => {
+            console.log("İstemci: drawNumber olayı gönderildi.");
             socket.emit('drawNumber', { lobby: sessionStorage.getItem('lobby') });
         });
 
+        
         socket.on('newNumber', ({ number }) => {
             drawnNumberDiv.textContent = `Çekilen Sayı: ${number}`;
             markNumber(number);

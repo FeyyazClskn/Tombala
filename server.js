@@ -71,6 +71,14 @@ io.on('connection', (socket) => {
     io.to(lobby).emit('newNumber', { number: newNumber });
 });
 
+    socket.on('sendMessage', ({ lobby, message }) => {
+    const player = lobbies[lobby]?.players.find(p => p.id === socket.id);
+    if (player) {
+        io.to(lobby).emit('newMessage', { playerName: player.name, message });
+    }
+});
+
+
 
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {

@@ -70,6 +70,7 @@
     <button id="selectCardButton" onclick="joinLobby()" disabled>Kart Seç ve Katıl</button>
 
     <script>
+        const socket = io(); // Sunucuya bağlan
         const maxPlayers = 2; // Maksimum oyuncu sayısı
         let players = []; // Oyuncu listesi
         let selectedCard = null; // Seçilen kart
@@ -139,6 +140,17 @@
             selectedCard = currentIndex;
             selectCardButton.disabled = false;
         };
+
+        socket.on('updatePlayers', (players) => {
+    const lobbyStatus = document.getElementById('lobbyStatus');
+    lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
+
+    if (players.length === 2) {
+        // İki oyuncu varsa oyunu başlat
+        alert("Lobi doldu, oyun başlıyor!");
+        startGame();
+    }
+});
 
         // Oyuncu lobiye katıldığında
         function joinLobby() {

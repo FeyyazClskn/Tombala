@@ -54,9 +54,6 @@
             padding: 10px 20px;
             font-size: 16px;
         }
-        .navigation-buttons {
-            margin-top: 20px;
-        }
         #playerUpdates {
             font-size: 16px;
             margin-top: 10px;
@@ -79,7 +76,7 @@
     <script>
         const socket = io();
         const lobby = 'lobi1';
-        const playerName = prompt('Lütfen isminizi girin:');
+        const playerName = localStorage.getItem('playerName'); // İsim index.html'den geliyor
         const allCards = []; // Kartlar
         let selectedCard = null;
         let currentIndex = 0;
@@ -138,6 +135,7 @@
             cardNumbers.forEach(num => {
                 const cell = document.createElement('div');
                 cell.textContent = num || '';
+                cell.onclick = () => selectCurrentCard(); // Kartın üzerine basıldığında seçme işlemi
                 currentCard.appendChild(cell);
             });
 
@@ -162,10 +160,15 @@
             }
         }
 
-        // Kart seçimi
-        function selectCard() {
-            const selectedNumbers = allCards[currentIndex];
+        // Kart seçimi (kart üzerine tıklama)
+        function selectCurrentCard() {
             selectedCard = currentIndex;
+            document.getElementById('selectCardButton').disabled = false;
+        }
+
+        // Kartı seçip gönderme
+        function selectCard() {
+            const selectedNumbers = allCards[selectedCard];
             socket.emit('selectCard', { lobby, card: selectedNumbers });
         }
 

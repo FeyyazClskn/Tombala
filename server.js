@@ -56,6 +56,12 @@ socket.on('selectCard', ({ lobby, card }) => {
     document.getElementById('playerCount').textContent = `${playerCount}/2`;
 });
 
+    socket.on('allPlayersReady', () => {
+    document.getElementById('startGameBtn').style.display = 'block';
+    document.getElementById('startGameBtn').disabled = false;
+});
+
+
 
     socket.on('disconnect', () => {
         console.log('Bir oyuncu ayrıldı:', socket.id);

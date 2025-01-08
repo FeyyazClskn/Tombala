@@ -81,6 +81,16 @@
         const totalCards = 48;
         let selectedCard = null;
 
+        // Simülasyon için oyuncu sayısı ve kart bilgileri
+        const gameData = JSON.parse(localStorage.getItem('gameData')) || { players: 0, cards: {} };
+
+        function updatePlayerCount() {
+            document.getElementById('playerCount').textContent = gameData.players;
+            if (gameData.players === 2) {
+                document.getElementById('startGameBtn').style.display = 'block';
+            }
+        }
+
         function renderCard(cardNumber) {
             const card = document.getElementById('card');
             card.innerHTML = '';
@@ -114,14 +124,23 @@
 
         function selectCard() {
             selectedCard = currentCard;
+            gameData.players++;
+            gameData.cards[`player${gameData.players}`] = document.getElementById('card').innerHTML;
+            localStorage.setItem('gameData', JSON.stringify(gameData));
             alert(`Kart ${selectedCard} seçildi!`);
-            document.getElementById('startGameBtn').style.display = 'block';
+            updatePlayerCount();
         }
 
         function startGame() {
+            if (gameData.players < 2) {
+                alert('Tüm oyuncular kart seçmeden oyunu başlatamazsınız.');
+                return;
+            }
             window.location.href = 'tmbl1game.html';
         }
 
+        // Oyuncu sayısını güncelle
+        updatePlayerCount();
         renderCard(currentCard);
     </script>
 </body>

@@ -54,9 +54,10 @@ socket.on('joinLobby', ({ lobby, playerName }) => {
         io.to(lobby).emit('newMessage', { playerName, message });
     });
 
-    socket.on('startGame', (lobby) => {
-        io.to(lobby).emit('startGame', { cards: lobbies[lobby].players });
-    });
+socket.on('startGame', (lobby) => {
+    io.to(lobby).emit('startGame', { cards: lobbies[lobby].players });
+});
+
 
     socket.on('disconnect', () => {
         for (const lobby in lobbies) {

@@ -137,10 +137,27 @@
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
 
-        // Sayı çekme işlemi
+        // Sayı çekme
+        const drawButton = document.getElementById('drawButton');
+        const drawnNumberDiv = document.getElementById('drawnNumber');
+
         drawButton.addEventListener('click', () => {
-            socket.emit('drawNumber', { lobby: sessionStorage.getItem('lobby') });
+            socket.emit('drawNumber');
         });
+
+        socket.on('newNumber', number => {
+            drawnNumberDiv.textContent = `Çekilen Sayı: ${number}`;
+            markNumber(number);
+        });
+
+        function markNumber(number) {
+            const cells = document.querySelectorAll('.grid .cell');
+            cells.forEach(cell => {
+                if (parseInt(cell.textContent) === number) {
+                    cell.classList.add('matched');
+                }
+            });
+        }
 
         // Çekilen sayıyı ekranda göster
         socket.on('newNumber', ({ number }) => {
@@ -175,21 +192,24 @@
             alert(`TOMBALA! ${winner} kazandı!`);
         });
 
-        // Mesaj gönder
-        document.getElementById('sendMessageButton').addEventListener('click', () => {
+        // Mesajlaşma
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageButton = document.getElementById('sendMessageButton');
+
+        sendMessageButton.addEventListener('click', () => {
             const message = messageInput.value;
-            if (message) {
-                socket.emit('sendMessage', { lobby: sessionStorage.getItem('lobby'), message });
+            if (message.trim()) {
+                socket.emit('sendMessage', message);
                 messageInput.value = '';
             }
         });
 
-        // Yeni mesajları göster
-        socket.on('newMessage', ({ playerName, message }) => {
+        socket.on('newMessage', message => {
             const messageElement = document.createElement('div');
-            messageElement.textContent = `${playerName}: ${message}`;
-            messages.appendChild(messageElement);
-            messages.scrollTop = messages.scrollHeight;
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
     </script>
 </body>

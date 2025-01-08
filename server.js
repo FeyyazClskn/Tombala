@@ -55,10 +55,10 @@ io.on('connection', (socket) => {
     // Sayı çekme işlemi
 socket.on('drawNumber', ({ lobby }) => {
     console.log(`Sunucu: drawNumber olayı alındı. Lobi: ${lobby}`);
-    console.log('Sunucu: Mevcut lobbies durumu:', lobbies);
 
-    if (!lobbies[lobby]) {
-        console.log(`Sunucu: Lobi "${lobby}" bulunamadı.`);
+    if (!lobby || !lobbies[lobby]) {
+        console.log(`Sunucu: Lobi "${lobby}" bulunamadı veya tanımlı değil.`);
+        socket.emit('error', { message: 'Lobi bulunamadı veya oyuncu doğru şekilde katılmamış.' });
         return;
     }
 
@@ -70,10 +70,10 @@ socket.on('drawNumber', ({ lobby }) => {
     } while (lobbyData.drawnNumbers.includes(newNumber));
 
     lobbyData.drawnNumbers.push(newNumber);
-
     io.to(lobby).emit('newNumber', { number: newNumber });
     console.log(`Sunucu: Çekilen sayı ${newNumber} lobisine gönderildi.`);
 });
+
 
 
 

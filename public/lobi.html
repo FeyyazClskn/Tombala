@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombala - Lobi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .lobby-buttons button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lobi Seçimi</h1>
+        <div class="lobby-buttons">
+            <button onclick="enterLobby('tmbl1.html')">Lobi 1</button>
+            <button onclick="enterLobby('tmbl2.html')">Lobi 2</button>
+            <button onclick="enterLobby('tmbl3.html')">Lobi 3</button>
+            <button onclick="enterLobby('tmbl4.html')">Lobi 4</button>
+            <button onclick="enterLobby('tmbl5.html')">Lobi 5</button>
+        </div>
+    </div>
+
+    <script>
+        function enterLobby(lobbyPage) {
+            const playerName = localStorage.getItem('playerName');
+            if (!playerName) {
+                alert('Lütfen önce oyuncu adınızı girin!');
+                window.location.href = 'index.html';
+                return;
+            }
+            window.location.href = lobbyPage;
+        }
+    </script>
+</body>
+</html>

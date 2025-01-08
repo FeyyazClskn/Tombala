@@ -117,23 +117,18 @@
         const messages = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
 
-        socket.on('startGame', ({ players }) => {
-        const cardsContainer = document.getElementById('cardsContainer');
-        cardsContainer.innerHTML = ''; // Önceki içeriği temizle
-
+        // Kartları ekrana yerleştir
         players.forEach(player => {
-        const playerCard = document.createElement('div');
-        playerCard.className = 'player-card';
-
-        playerCard.innerHTML = `
-            <h3>${player.name}</h3>
-            <p>Kart: ${player.card}</p>
-            `;
-
-                cardsContainer.appendChild(playerCard);
-            });
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            cardElement.innerHTML = 
+                <div class="player-name">${player.name}</div>
+                <div class="grid">
+                    ${player.card.map(num => <div class="cell">${num || ''}</div>).join('')}
+                </div>
+            ;
+            cardContainer.appendChild(cardElement);
         });
-
 
         // Sayı çekme butonunu aktif et
         if (players.length === 2) {

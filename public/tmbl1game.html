@@ -121,12 +121,12 @@
         players.forEach(player => {
             const cardElement = document.createElement('div');
             cardElement.className = 'card';
-            cardElement.innerHTML = 
+            cardElement.innerHTML = `
                 <div class="player-name">${player.name}</div>
                 <div class="grid">
-                    ${player.card.map(num => <div class="cell">${num || ''}</div>).join('')}
+                    ${player.card.map(num => `<div class="cell">${num || ''}</div>`).join('')}
                 </div>
-            ;
+            `;
             cardContainer.appendChild(cardElement);
         });
 
@@ -144,7 +144,7 @@
 
         // Çekilen sayıyı ekranda göster
         socket.on('newNumber', ({ number }) => {
-            drawnNumberDiv.textContent = Çekilen Sayı: ${number};
+            drawnNumberDiv.textContent = `Çekilen Sayı: ${number}`;
             markNumber(number);
             checkWin();
         });
@@ -165,14 +165,14 @@
             cards.forEach((card, index) => {
                 const matchedCells = card.querySelectorAll('.matched');
                 if (matchedCells.length === 15) {
-                    alert(TOMBALA! ${players[index].name} kazandı!);
+                    alert(`TOMBALA! ${players[index].name} kazandı!`);
                     socket.emit('gameOver', { lobby: sessionStorage.getItem('lobby'), winner: players[index].name });
                 }
             });
         }
 
         socket.on('gameOver', ({ winner }) => {
-            alert(TOMBALA! ${winner} kazandı!);
+            alert(`TOMBALA! ${winner} kazandı!`);
         });
 
         // Mesaj gönder
@@ -187,7 +187,7 @@
         // Yeni mesajları göster
         socket.on('newMessage', ({ playerName, message }) => {
             const messageElement = document.createElement('div');
-            messageElement.textContent = ${playerName}: ${message};
+            messageElement.textContent = `${playerName}: ${message}`;
             messages.appendChild(messageElement);
             messages.scrollTop = messages.scrollHeight;
         });

@@ -18,16 +18,17 @@ let lobbies = {
 io.on('connection', (socket) => {
     console.log('Bir oyuncu bağlandı:', socket.id);
 
-    socket.on('joinLobby', ({ lobby, playerName }) => {
-        if (lobbies[lobby].players.length < 2) {
-            lobbies[lobby].players.push({ id: socket.id, name: playerName });
-            socket.join(lobby);
-            console.log(`${playerName} ${lobby} lobisine katıldı.`);
-            io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
-        } else {
-            socket.emit('lobbyFull');
-        }
-    });
+socket.on('joinLobby', ({ lobby, playerName }) => {
+    if (lobbies[lobby].players.length < 2) {
+        lobbies[lobby].players.push({ id: socket.id, name: playerName });
+        socket.join(lobby);
+        console.log(`${playerName} ${lobby} lobisine katıldı.`);
+        io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+    } else {
+        socket.emit('lobbyFull');
+    }
+});
+
 
     socket.on('selectCard', ({ lobby, card }) => {
         socket.to(lobby).emit('cardSelected', { playerId: socket.id, card });

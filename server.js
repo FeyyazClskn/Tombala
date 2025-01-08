@@ -1,77 +1,64 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = new Server(server);
 
-const PORT = 3000;
+const lobbies = {}; // Stores lobby data
 
 app.use(express.static('public'));
 
-let lobbies = {
-    tmbl1: { players: [], gameStarted: false },
-    tmbl2: { players: [], gameStarted: false }
-};
-
 io.on('connection', (socket) => {
-    console.log('Bir oyuncu bağlandı:', socket.id);
+    console.log('A user connected:', socket.id);
 
-socket.on('joinLobby', ({ lobby, playerName }) => {
-    if (lobbies[lobby].players.length < 2) {
-        lobbies[lobby].players.push({ id: socket.id, name: playerName });
-        socket.join(lobby);
-        console.log(`${playerName} ${lobby} lobisine katıldı.`);
-        io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
-    } else {
-        socket.emit('lobbyFull');
-    }
-});
+    socket.on('createLobby', ({ lobbyName }) => {
+        if (!lobbies[lobbyName]) {
+            lobbies[lobbyName] = { players: [] };
+            console.log(`Lobby ${lobbyName} created.`);
+        }
+    });
 
-    
+    socket.on('joinLobby', ({ lobby, playerName }) => {
+        if (lobbies[lobby].players.length < 2) {
+            lobbies[lobby].players.push({ id: socket.id, name: playerName });
+            socket.join(lobby);
+            console.log(`${playerName} joined lobby ${lobby}.`);
+            io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+        } else {
+            socket.emit('lobbyFull');
+        }
+    });
 
-socket.on('selectCard', ({ lobby, card }) => {
-    const player = lobbies[lobby].players.find(p => p.id === socket.id);
-    if (player) player.card = card;
+    socket.on('selectCard', ({ lobby, card }) => {
+        const player = lobbies[lobby].players.find(p => p.id === socket.id);
+        if (player) player.card = card;
 
-    const allPlayersReady = lobbies[lobby].players.every(p => p.card);
-    if (allPlayersReady) {
-        io.to(lobby).emit('allPlayersReady');
-    }
-});
-
-
-    socket.on('drawNumber', ({ lobby }) => {
-        const number = Math.floor(Math.random() * 90) + 1;
-        io.to(lobby).emit('numberDrawn', number);
+        const allPlayersReady = lobbies[lobby].players.every(p => p.card);
+        if (allPlayersReady) {
+            io.to(lobby).emit('allPlayersReady');
+        }
     });
 
     socket.on('sendMessage', ({ lobby, message }) => {
-        io.to(lobby).emit('newMessage', message);
+        const playerName = lobbies[lobby].players.find(p => p.id === socket.id).name;
+        io.to(lobby).emit('newMessage', { playerName, message });
     });
 
-    socket.on('updatePlayers', (players) => {
-    const playerCount = players.length;
-    document.getElementById('playerCount').textContent = `${playerCount}/2`;
-});
-
-    socket.on('allPlayersReady', () => {
-    document.getElementById('startGameBtn').style.display = 'block';
-    document.getElementById('startGameBtn').disabled = false;
-});
-
-
+    socket.on('startGame', (lobby) => {
+        io.to(lobby).emit('startGame', { cards: lobbies[lobby].players });
+    });
 
     socket.on('disconnect', () => {
-        console.log('Bir oyuncu ayrıldı:', socket.id);
-        for (let lobby in lobbies) {
-            lobbies[lobby].players = lobbies[lobby].players.filter(player => player.id !== socket.id);
+        for (const lobby in lobbies) {
+            lobbies[lobby].players = lobbies[lobby].players.filter(p => p.id !== socket.id);
             io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
         }
+        console.log('A user disconnected:', socket.id);
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`Sunucu ${PORT} portunda çalışıyor.`);
+server.listen(3000, () => {
+    console.log('Server listening on port 3000');
 });

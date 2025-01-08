@@ -41,7 +41,14 @@
             align-items: center;
             justify-content: center;
             font-size: 14px;
+            font-weight: bold;
             border: 1px solid black;
+        }
+        .card div:nth-child(even) {
+            background-color: #ffcccb;
+        }
+        .card div:nth-child(odd) {
+            background-color: #fff;
         }
         .controls {
             margin-top: 20px;
@@ -75,24 +82,21 @@
         let selectedCard = null;
 
         function renderCard(cardNumber) {
-    const card = document.getElementById('card');
-    card.innerHTML = '';
-    const randomNumbers = Array.from({ length: 90 }, (_, i) => i + 1)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 15);
-
-    for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 9; col++) {
-            const cell = document.createElement('div');
-            const isMiddleRowFirstCol = row === 1 && col === 0;
-            cell.textContent = isMiddleRowFirstCol
-                ? cardNumber
-                : randomNumbers.pop() || '';
-            cell.style.backgroundColor = (row + col) % 2 === 0 ? 'red' : 'white';
-            card.appendChild(cell);
+            const card = document.getElementById('card');
+            card.innerHTML = '';
+            for (let i = 0; i < 27; i++) {
+                const cell = document.createElement('div');
+                if (i === 0 && cardNumber <= totalCards) {
+                    cell.textContent = cardNumber;
+                } else if (i !== 0 && cardNumber <= totalCards) {
+                    const isFilled = Math.random() > 0.5;
+                    cell.textContent = isFilled ? Math.floor(Math.random() * 90) + 1 : '';
+                } else {
+                    cell.textContent = '';
+                }
+                card.appendChild(cell);
+            }
         }
-    }
-}
 
         function prevCard() {
             if (currentCard > 1) {

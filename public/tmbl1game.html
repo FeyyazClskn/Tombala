@@ -117,7 +117,6 @@
         const messages = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
 
-        // Kartları ekrana yerleştir
         players.forEach(player => {
             const cardElement = document.createElement('div');
             cardElement.className = 'card';
@@ -130,26 +129,21 @@
             cardContainer.appendChild(cardElement);
         });
 
-        // Sayı çekme butonunu aktif et
         if (players.length === 2) {
             drawButton.disabled = false;
         } else {
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
 
-        // Sayı çekme işlemi
         drawButton.addEventListener('click', () => {
             socket.emit('drawNumber', { lobby: sessionStorage.getItem('lobby') });
         });
 
-        // Çekilen sayıyı ekranda göster
         socket.on('newNumber', ({ number }) => {
             drawnNumberDiv.textContent = `Çekilen Sayı: ${number}`;
             markNumber(number);
-            checkWin();
         });
 
-        // Çekilen sayıyı işaretle
         function markNumber(number) {
             const cells = document.querySelectorAll('.grid .cell');
             cells.forEach(cell => {
@@ -159,23 +153,6 @@
             });
         }
 
-        // Oyuncunun kazandığını kontrol et
-        function checkWin() {
-            const cards = document.querySelectorAll('.card .grid');
-            cards.forEach((card, index) => {
-                const matchedCells = card.querySelectorAll('.matched');
-                if (matchedCells.length === 15) {
-                    alert(`TOMBALA! ${players[index].name} kazandı!`);
-                    socket.emit('gameOver', { lobby: sessionStorage.getItem('lobby'), winner: players[index].name });
-                }
-            });
-        }
-
-        socket.on('gameOver', ({ winner }) => {
-            alert(`TOMBALA! ${winner} kazandı!`);
-        });
-
-        // Mesaj gönder
         document.getElementById('sendMessageButton').addEventListener('click', () => {
             const message = messageInput.value;
             if (message) {
@@ -184,7 +161,6 @@
             }
         });
 
-        // Yeni mesajları göster
         socket.on('newMessage', ({ playerName, message }) => {
             const messageElement = document.createElement('div');
             messageElement.textContent = `${playerName}: ${message}`;

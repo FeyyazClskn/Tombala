@@ -53,21 +53,23 @@ io.on('connection', (socket) => {
     });
 
     // Sayı çekme işlemi
-    socket.on('drawNumber', ({ lobby }) => {
-        if (!lobbies[lobby]) return;
+socket.on('drawNumber', ({ lobby }) => {
+    console.log(`Sunucu: drawNumber olayı alındı. Lobi: ${lobby}`);
+    if (!lobbies[lobby]) return;
+    
+    const lobbyData = lobbies[lobby];
+    let newNumber;
 
-        const lobbyData = lobbies[lobby];
-        let newNumber;
+    do {
+        newNumber = Math.floor(Math.random() * 90) + 1;
+    } while (lobbyData.drawnNumbers.includes(newNumber));
 
-        do {
-            newNumber = Math.floor(Math.random() * 90) + 1;
-        } while (lobbyData.drawnNumbers.includes(newNumber));
+    lobbyData.drawnNumbers.push(newNumber);
 
-        lobbyData.drawnNumbers.push(newNumber);
+    io.to(lobby).emit('newNumber', { number: newNumber });
+    console.log(`Sunucu: Çekilen sayı ${newNumber} lobisine gönderildi.`);
+});
 
-        io.to(lobby).emit('newNumber', { number: newNumber });
-        console.log(`Sunucu: Çekilen sayı ${newNumber} lobisine gönderildi.`);
-    });
 
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {

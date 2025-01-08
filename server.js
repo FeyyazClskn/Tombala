@@ -1,3 +1,4 @@
+// --- server.js ---
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -26,6 +27,29 @@ io.on('connection', (socket) => {
         lobbies[lobby].players.push({ id: socket.id, name: playerName });
         socket.join(lobby);
         io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+    });
+
+    // Kart seçimi
+    socket.on('selectCard', ({ lobby, card }) => {
+        if (!lobbies[lobby]) return;
+
+        lobbies[lobby].cards[socket.id] = card;
+        const player = lobbies[lobby].players.find(p => p.id === socket.id);
+
+        if (player) {
+            io.to(lobby).emit('playerSelectedCard', { playerName: player.name });
+        }
+
+        // Tüm oyuncular kart seçti mi kontrol et
+        if (Object.keys(lobbies[lobby].cards).length === lobbies[lobby].players.length) {
+            const players = lobbies[lobby].players.map(p => ({
+                id: p.id,
+                name: p.name,
+                card: lobbies[lobby].cards[p.id]
+            }));
+
+            io.to(lobby).emit('startGame', { players });
+        }
     });
 
     // Sayı çekme işlemi

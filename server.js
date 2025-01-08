@@ -77,27 +77,27 @@ io.on('connection', (socket) => {
 
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {
-        console.log('Bir kullanıcı ayrıldı:', socket.id);
+    console.log('Bir kullanıcı ayrıldı:', socket.id);
 
-        for (const lobby in lobbies) {
-            const playerIndex = lobbies[lobby].players.findIndex(p => p.id === socket.id);
+    for (const lobby in lobbies) {
+        const playerIndex = lobbies[lobby].players.findIndex(p => p.id === socket.id);
 
-            if (playerIndex !== -1) {
-                lobbies[lobby].players.splice(playerIndex, 1);
-                delete lobbies[lobby].cards[socket.id];
+        if (playerIndex !== -1) {
+            lobbies[lobby].players.splice(playerIndex, 1);
+            delete lobbies[lobby].cards[socket.id];
 
-                // Lobideki oyuncuları güncelle
-                io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+            // Lobideki oyuncuları güncelle
+            io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
 
-                // Eğer lobi boşsa, lobiyi sil
-                if (lobbies[lobby].players.length === 0) {
-                    delete lobbies[lobby];
-                }
-                break;
+            // Eğer lobi boşsa, lobiyi sil
+            if (lobbies[lobby].players.length === 0) {
+                delete lobbies[lobby];
             }
+            break;
         }
-    });
+    }
 });
+
 
 server.listen(PORT, () => {
     console.log(`Sunucu ${PORT} portunda çalışıyor.`);

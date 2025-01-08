@@ -2,17 +2,18 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 
+// Uygulama ve sunucu oluşturma
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-// Sunucu ayarları
+// Statik dosyaları sunma (public klasöründen)
 app.use(express.static('public'));
 
 // Lobi yönetimi
-const lobbies = {}; // { lobbyName: { players: [], cards: {} } }
+const lobbies = {}; // { lobbyName: { players: [], cards: {}, drawnNumbers: [] } }
 
 io.on('connection', (socket) => {
     console.log('Bir kullanıcı bağlandı:', socket.id);
@@ -20,7 +21,7 @@ io.on('connection', (socket) => {
     // Oyuncu bir lobiye katılıyor
     socket.on('joinLobby', ({ lobby, playerName }) => {
         if (!lobbies[lobby]) {
-            lobbies[lobby] = { players: [], cards: {} };
+            lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
         }
 
         // Lobide oyuncuyu ekle
@@ -55,49 +56,66 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Sayı çekme
-    socket.on('drawNumber', () => {
+    // Sayı çekme işlemi
+    socket.on('drawNumber', ({ lobby }) => {
+        if (!lobbies[lobby]) return;
+
+        // Çekilen sayı seçimi
         let newNumber;
         do {
             newNumber = Math.floor(Math.random() * 90) + 1;
-        } while (drawnNumbers.includes(newNumber));
+        } while (lobbies[lobby].drawnNumbers.includes(newNumber));
 
-        drawnNumbers.push(newNumber);
-        io.emit('newNumber', newNumber);
+        lobbies[lobby].drawnNumbers.push(newNumber);
+
+        // Çekilen sayıyı lobideki oyunculara gönder
+        io.to(lobby).emit('newNumber', { number: newNumber });
     });
 
-    socket.on('sendMessage', message => {
-        io.emit('newMessage', message);
+    // Oyuncunun kazandığını kontrol etme
+    socket.on('gameOver', ({ lobby, winner }) => {
+        if (!lobbies[lobby]) return;
+
+        // Kazanan mesajını gönder
+        io.to(lobby).emit('gameOver', { winner });
+
+        // Lobiyi sıfırla
+        delete lobbies[lobby];
     });
 
+    // Mesaj gönderme
+    socket.on('sendMessage', ({ lobby, message }) => {
+        if (!lobbies[lobby]) return;
+
+        const player = lobbies[lobby].players.find(p => p.id === socket.id);
+        if (player) {
+            io.to(lobby).emit('newMessage', { playerName: player.name, message });
+        }
+    });
+
+    // Kullanıcı bağlantıyı kopardığında
     socket.on('disconnect', () => {
         console.log('Bir kullanıcı ayrıldı:', socket.id);
+
+        for (const lobby in lobbies) {
+            const playerIndex = lobbies[lobby].players.findIndex(p => p.id === socket.id);
+
+            if (playerIndex !== -1) {
+                lobbies[lobby].players.splice(playerIndex, 1);
+                delete lobbies[lobby].cards[socket.id];
+
+                // Lobideki oyuncuları güncelle
+                io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+
+                // Eğer lobi boşsa, lobiyi sil
+                if (lobbies[lobby].players.length === 0) {
+                    delete lobbies[lobby];
+                }
+                break;
+            }
+        }
     });
 });
-
-    // Oyuncu ayrıldığında
-    socket.on('disconnect', () => {
-    console.log('Bir kullanıcı ayrıldı:', socket.id);
-
-    for (const lobby in lobbies) {
-        const playerIndex = lobbies[lobby].players.findIndex(p => p.id === socket.id);
-
-        if (playerIndex !== -1) {
-            lobbies[lobby].players.splice(playerIndex, 1);
-            delete lobbies[lobby].cards[socket.id];
-
-            // Lobideki oyuncuları güncelle
-            io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
-
-            // Eğer lobi boşsa, lobiyi sil
-            if (lobbies[lobby].players.length === 0) {
-                delete lobbies[lobby];
-            }
-            break;
-        }
-    }
-});
-
 
 server.listen(PORT, () => {
     console.log(`Sunucu ${PORT} portunda çalışıyor.`);

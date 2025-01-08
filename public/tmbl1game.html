@@ -7,20 +7,16 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
-        h1 {
-            margin-top: 20px;
-        }
-        .game-container {
-            display: flex;
-            justify-content: space-around;
-            width: 80%;
-            margin: 20px 0;
+        .player {
+            margin: 20px;
+            text-align: center;
         }
         .card {
             border: 2px solid #000;
@@ -36,113 +32,30 @@
             align-items: center;
             justify-content: center;
             font-size: 14px;
+            font-weight: bold;
             border: 1px solid black;
-        }
-        .card div.matched {
-            background-color: #4caf50;
-            color: white;
-        }
-        .controls {
-            margin: 20px;
-        }
-        .controls button {
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .chat {
-            width: 60%;
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            background: #fff;
-        }
-        .chat-box {
-            height: 200px;
-            overflow-y: scroll;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            padding: 5px;
-        }
-        .chat-input {
-            display: flex;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 5px;
-        }
-        .chat-input button {
-            padding: 5px 10px;
         }
     </style>
 </head>
 <body>
     <h1>Tombala Oyun Ekranı</h1>
-    <div class="game-container">
-        <div>
-            <h3>Oyuncu 1</h3>
-            <div class="card" id="card1"></div>
-        </div>
-        <div>
-            <h3>Oyuncu 2</h3>
-            <div class="card" id="card2"></div>
-        </div>
-    </div>
-    <div class="controls">
-        <button onclick="drawNumber()">Sayı Çek</button>
-        <p>Çekilen Sayı: <span id="drawnNumber">-</span></p>
-    </div>
-    <div class="chat">
-        <h3>Sohbet</h3>
-        <div class="chat-box" id="chatBox"></div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Mesajınızı yazın...">
-            <button onclick="sendMessage()">Gönder</button>
-        </div>
-    </div>
+    <div id="playerCards"></div>
 
     <script>
-        function renderCard(cardId) {
-            const card = document.getElementById(cardId);
-            for (let i = 0; i < 27; i++) {
-                const cell = document.createElement('div');
-                cell.textContent = Math.floor(Math.random() * 90) + 1;
-                card.appendChild(cell);
+        const gameData = JSON.parse(localStorage.getItem('gameData')) || { players: 0, cards: {} };
+
+        function renderPlayerCards() {
+            const playerCardsContainer = document.getElementById('playerCards');
+            playerCardsContainer.innerHTML = '';
+            for (let i = 1; i <= gameData.players; i++) {
+                const playerDiv = document.createElement('div');
+                playerDiv.classList.add('player');
+                playerDiv.innerHTML = `<h2>Oyuncu ${i}</h2><div class="card">${gameData.cards[`player${i}`]}</div>`;
+                playerCardsContainer.appendChild(playerDiv);
             }
         }
 
-        function drawNumber() {
-            const drawnNumber = Math.floor(Math.random() * 90) + 1;
-            document.getElementById('drawnNumber').textContent = drawnNumber;
-            markNumber('card1', drawnNumber);
-            markNumber('card2', drawnNumber);
-        }
-
-        function markNumber(cardId, number) {
-            const cells = document.getElementById(cardId).children;
-            for (let cell of cells) {
-                if (cell.textContent == number) {
-                    cell.classList.add('matched');
-                }
-            }
-        }
-
-        function sendMessage() {
-            const chatInput = document.getElementById('chatInput');
-            const message = chatInput.value.trim();
-            if (message) {
-                const chatBox = document.getElementById('chatBox');
-                const msgDiv = document.createElement('div');
-                msgDiv.textContent = `Oyuncu: ${message}`;
-                chatBox.appendChild(msgDiv);
-                chatInput.value = '';
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
-        }
-
-        renderCard('card1');
-        renderCard('card2');
+        renderPlayerCards();
     </script>
 </body>
 </html>

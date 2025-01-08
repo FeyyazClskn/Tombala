@@ -55,6 +55,23 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('drawNumber', ({ lobby }) => {
+    if (!lobbies[lobby]) return;
+
+    const drawnNumbers = lobbies[lobby].drawnNumbers || [];
+    let newNumber;
+
+    do {
+        newNumber = Math.floor(Math.random() * 90) + 1; // 1 ile 90 arasında rastgele bir sayı
+    } while (drawnNumbers.includes(newNumber));
+
+    drawnNumbers.push(newNumber);
+    lobbies[lobby].drawnNumbers = drawnNumbers;
+
+    io.to(lobby).emit('newNumber', { number: newNumber });
+});
+
+
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {
         console.log('Bir kullanıcı ayrıldı:', socket.id);

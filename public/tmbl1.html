@@ -42,9 +42,6 @@
         .card div:nth-child(odd) {
             background-color: #fff;
         }
-        .selected {
-            outline: 3px solid green;
-        }
         #lobbyStatus {
             margin: 20px;
             font-size: 18px;
@@ -170,6 +167,9 @@
         function selectCard() {
             const selectedNumbers = allCards[selectedCard];
             socket.emit('selectCard', { lobby, card: selectedNumbers });
+
+            const playerUpdates = document.getElementById('playerUpdates');
+            playerUpdates.textContent = "Kart seçiminiz gönderildi. Diğer oyuncunun seçim yapması bekleniyor...";
         }
 
         // Sayfa yüklendiğinde kartları oluştur

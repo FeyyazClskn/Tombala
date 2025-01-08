@@ -2,12 +2,9 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 
-// Uygulama ve sunucu oluşturma
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
 const PORT = process.env.PORT || 3000;
+
+let drawnNumbers = [];
 
 // Statik dosyaları sunma (public klasöründen)
 app.use(express.static('public'));

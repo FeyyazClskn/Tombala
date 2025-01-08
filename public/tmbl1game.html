@@ -14,50 +14,57 @@
         }
         .card-container {
             display: flex;
-            justify-content: space-around;
-            gap: 50px;
+            justify-content: center;
+            gap: 40px;
             flex-wrap: wrap;
         }
-        .player {
-            text-align: center;
-            border: 2px solid #ccc;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
         .card {
+            display: inline-block;
+            width: 240px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .card .player-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+        .card .grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 2px;
-            margin: 20px auto;
-            width: 360px;
-            border: 2px solid #000;
+            gap: 5px;
         }
-        .card div {
-            width: 40px;
-            height: 40px;
+        .card .grid .cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            width: 100%;
+            height: 40px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            font-size: 16px;
             font-weight: bold;
-            border: 1px solid black;
+            background-color: #f8d7da;
         }
-        .card div:nth-child(even) {
-            background-color: #ffcccb;
+        .card .grid .cell.matched {
+            background-color: #c3e6cb;
+            color: #155724;
         }
-        .card div:nth-child(odd) {
-            background-color: #fff;
-        }
-        .marked {
-            background-color: #98fb98 !important;
+        #drawnNumber {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #333;
         }
         .chat {
             margin-top: 20px;
             max-width: 400px;
-            margin: 0 auto;
+            margin: 20px auto;
         }
         .messages {
             height: 200px;
@@ -88,14 +95,14 @@
 <body>
     <h1>Tombala Oyun</h1>
     <div class="card-container" id="cardContainer"></div>
-    <button id="drawNumberButton" onclick="requestDrawNumber()" disabled>Sayı Çek</button>
-    <div id="drawnNumbers"></div>
+    <div id="drawnNumber">Çekilen Sayı: Henüz Çekilmedi</div>
+    <button id="drawButton" disabled>Sayı Çek</button>
 
     <div class="chat">
         <div class="messages" id="messages"></div>
         <div class="input-area">
             <input type="text" id="messageInput" placeholder="Mesaj yaz...">
-            <button onclick="sendMessage()">Gönder</button>
+            <button id="sendMessageButton">Gönder</button>
         </div>
     </div>
 
@@ -103,101 +110,86 @@
     <script>
         const socket = io();
 
-        // Oyuncu verilerini al
         const players = JSON.parse(sessionStorage.getItem('players')) || [];
         const cardContainer = document.getElementById('cardContainer');
-        const drawNumberButton = document.getElementById('drawNumberButton');
+        const drawButton = document.getElementById('drawButton');
+        const drawnNumberDiv = document.getElementById('drawnNumber');
+        const messages = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
 
-        // Kartları ekrana getir
+        // Kartları ekrana yerleştir
         players.forEach(player => {
-            const playerArea = document.createElement('div');
-            playerArea.className = 'player';
-
-            const playerName = document.createElement('h2');
-            playerName.textContent = player.name;
-            playerArea.appendChild(playerName);
-
-            const playerCard = document.createElement('div');
-            playerCard.className = 'card';
-
-            player.card.forEach(num => {
-                const cell = document.createElement('div');
-                cell.textContent = num || '';
-                playerCard.appendChild(cell);
-            });
-
-            playerArea.appendChild(playerCard);
-            cardContainer.appendChild(playerArea);
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            cardElement.innerHTML = `
+                <div class="player-name">${player.name}</div>
+                <div class="grid">
+                    ${player.card.map(num => `<div class="cell">${num || ''}</div>`).join('')}
+                </div>
+            `;
+            cardContainer.appendChild(cardElement);
         });
 
-        // Oyun başlama kontrolü
+        // Sayı çekme butonunu aktif et
         if (players.length === 2) {
-            drawNumberButton.disabled = false;
+            drawButton.disabled = false;
         } else {
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
 
-        // Sayı çekme isteği
-        function requestDrawNumber() {
-            const lobby = sessionStorage.getItem('lobby');
-            socket.emit('drawNumber', { lobby });
-        }
+        // Sayı çekme işlemi
+        drawButton.addEventListener('click', () => {
+            socket.emit('drawNumber', { lobby: sessionStorage.getItem('lobby') });
+        });
 
-        // Çekilen sayıyı işaretleme
+        // Çekilen sayıyı ekranda göster
+        socket.on('newNumber', ({ number }) => {
+            drawnNumberDiv.textContent = `Çekilen Sayı: ${number}`;
+            markNumber(number);
+            checkWin();
+        });
+
+        // Çekilen sayıyı işaretle
         function markNumber(number) {
-            const cells = document.querySelectorAll('.card div');
+            const cells = document.querySelectorAll('.grid .cell');
             cells.forEach(cell => {
                 if (parseInt(cell.textContent) === number) {
-                    cell.classList.add('marked');
+                    cell.classList.add('matched');
                 }
             });
-            checkWin();
         }
 
-        // Kazanma kontrolü
+        // Oyuncunun kazandığını kontrol et
         function checkWin() {
-            const playerCards = document.querySelectorAll('.player .card');
-            playerCards.forEach((card, index) => {
-                const markedCells = card.querySelectorAll('.marked');
-                if (markedCells.length === 15) {
+            const cards = document.querySelectorAll('.card .grid');
+            cards.forEach((card, index) => {
+                const matchedCells = card.querySelectorAll('.matched');
+                if (matchedCells.length === 15) {
                     alert(`TOMBALA! ${players[index].name} kazandı!`);
-                    const lobby = sessionStorage.getItem('lobby');
-                    socket.emit('gameOver', { lobby, winner: players[index].name });
+                    socket.emit('gameOver', { lobby: sessionStorage.getItem('lobby'), winner: players[index].name });
                 }
             });
         }
 
-        // Gelen sayıyı işaretle
-        socket.on('newNumber', ({ number }) => {
-            const drawnNumbers = document.getElementById('drawnNumbers');
-            drawnNumbers.textContent = `Çekilen Sayılar: ${number}`;
-            markNumber(number);
+        socket.on('gameOver', ({ winner }) => {
+            alert(`TOMBALA! ${winner} kazandı!`);
         });
 
         // Mesaj gönder
-        function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
+        document.getElementById('sendMessageButton').addEventListener('click', () => {
             const message = messageInput.value;
             if (message) {
-                const playerName = sessionStorage.getItem('playerName');
-                const lobby = sessionStorage.getItem('lobby');
-                socket.emit('sendMessage', { lobby, message, playerName });
+                socket.emit('sendMessage', { lobby: sessionStorage.getItem('lobby'), message });
                 messageInput.value = '';
             }
-        }
+        });
 
-        // Yeni mesaj
+        // Yeni mesajları göster
         socket.on('newMessage', ({ playerName, message }) => {
-            const messages = document.getElementById('messages');
             const messageElement = document.createElement('div');
             messageElement.textContent = `${playerName}: ${message}`;
             messages.appendChild(messageElement);
             messages.scrollTop = messages.scrollHeight;
-        });
-
-        // Oyun bitimi
-        socket.on('gameOver', ({ winner }) => {
-            alert(`TOMBALA! ${winner} kazandı!`);
         });
     </script>
 </body>

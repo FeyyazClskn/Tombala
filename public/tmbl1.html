@@ -80,6 +80,7 @@
 
         // Oyuncu lobiye katılıyor
         socket.emit('joinLobby', { lobby, playerName });
+        sessionStorage.setItem('lobby', lobby);
 
         // Lobi durumu güncelleme
         socket.on('updatePlayers', (players) => {

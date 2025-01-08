@@ -3,36 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tombala - Kart Seçimi</title>
+    <title>Tombala Lobi</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f8f9fa;
-        }
-        .container {
             text-align: center;
-            background: #fff;
+            background-color: #f0f0f0;
+            margin: 0;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .card-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
         }
         .card {
-            border: 2px solid #000;
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 2px;
+            margin: 20px auto;
+            width: 360px;
+            border: 2px solid #000;
         }
         .card div {
             width: 40px;
@@ -50,98 +37,91 @@
         .card div:nth-child(odd) {
             background-color: #fff;
         }
-        .controls {
-            margin-top: 20px;
-        }
-        .controls button {
-            margin: 5px;
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
+        #lobbyStatus {
+            margin: 20px;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Kart Seçimi</h1>
-        <div class="card-container">
-            <button onclick="prevCard()">←</button>
-            <div class="card" id="card"></div>
-            <button onclick="nextCard()">→</button>
-        </div>
-        <div class="controls">
-            <button onclick="selectCard()">Kartı Seç</button>
-            <button id="startGameBtn" onclick="startGame()" style="display:none;">Oyunu Başlat</button>
-        </div>
-        <p>Oyuncu Sayısı: <span id="playerCount">1</span>/2</p>
-    </div>
+    <h1>Tombala Lobi</h1>
+    <div id="lobbyStatus">Lobideki Oyuncu Sayısı: 0</div>
+    <div class="card" id="cardContainer"></div>
+    <button onclick="selectCard()">Kart Seç</button>
+    <button id="startGameButton" onclick="startGame()" disabled>Oyunu Başlat</button>
 
     <script>
-        let currentCard = 1;
-        const totalCards = 48;
-        let selectedCard = null;
+        const maxPlayers = 2; // Maksimum oyuncu sayısı
+        let gameData = JSON.parse(localStorage.getItem('gameData')) || { players: 0, cards: {}, selected: {} };
 
-        // Simülasyon için oyuncu sayısı ve kart bilgileri
-        const gameData = JSON.parse(localStorage.getItem('gameData')) || { players: 0, cards: {} };
-
-        function updatePlayerCount() {
-            document.getElementById('playerCount').textContent = gameData.players;
-            if (gameData.players === 2) {
-                document.getElementById('startGameBtn').style.display = 'block';
-            }
-        }
-
-        function renderCard(cardNumber) {
-            const card = document.getElementById('card');
-            card.innerHTML = '';
-            for (let i = 0; i < 27; i++) {
+        // Kart oluşturma
+        function generateCard() {
+            const cardContainer = document.getElementById('cardContainer');
+            cardContainer.innerHTML = '';
+            const numbers = Array.from({ length: 90 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+            const selectedNumbers = numbers.slice(0, 15);
+            const cardNumbers = Array(27).fill('');
+            selectedNumbers.forEach(num => {
+                let index;
+                do {
+                    index = Math.floor(Math.random() * 27);
+                } while (cardNumbers[index] !== '');
+                cardNumbers[index] = num;
+            });
+            cardNumbers.forEach((num, i) => {
                 const cell = document.createElement('div');
-                if (i === 0 && cardNumber <= totalCards) {
-                    cell.textContent = cardNumber;
-                } else if (i !== 0 && cardNumber <= totalCards) {
-                    const isFilled = Math.random() > 0.5;
-                    cell.textContent = isFilled ? Math.floor(Math.random() * 90) + 1 : '';
-                } else {
-                    cell.textContent = '';
-                }
-                card.appendChild(cell);
-            }
+                cell.textContent = num || '';
+                cardContainer.appendChild(cell);
+            });
         }
 
-        function prevCard() {
-            if (currentCard > 1) {
-                currentCard--;
-                renderCard(currentCard);
-            }
-        }
-
-        function nextCard() {
-            if (currentCard < totalCards) {
-                currentCard++;
-                renderCard(currentCard);
-            }
-        }
-
+        // Oyuncu kart seçtiğinde
         function selectCard() {
-            selectedCard = currentCard;
-            gameData.players++;
-            gameData.cards[`player${gameData.players}`] = document.getElementById('card').innerHTML;
-            localStorage.setItem('gameData', JSON.stringify(gameData));
-            alert(`Kart ${selectedCard} seçildi!`);
-            updatePlayerCount();
-        }
+            const playerIndex = gameData.players + 1;
 
-        function startGame() {
-            if (gameData.players < 2) {
-                alert('Tüm oyuncular kart seçmeden oyunu başlatamazsınız.');
+            // Zaten kart seçmişse oyuncu sayısını artırma
+            if (gameData.selected[playerIndex]) {
+                alert("Zaten bir kart seçtiniz!");
                 return;
             }
-            window.location.href = 'tmbl1game.html';
+
+            if (gameData.players >= maxPlayers) {
+                alert("Lobi dolu! Daha fazla oyuncu giremez.");
+                return;
+            }
+
+            const cardContainer = document.getElementById('cardContainer');
+            gameData.players += 1;
+            gameData.cards[`player${playerIndex}`] = cardContainer.innerHTML;
+            gameData.selected[playerIndex] = true; // Oyuncunun kart seçtiğini işaretle
+            localStorage.setItem('gameData', JSON.stringify(gameData));
+
+            updateLobbyStatus();
+            generateCard();
         }
 
-        // Oyuncu sayısını güncelle
-        updatePlayerCount();
-        renderCard(currentCard);
+        // Lobi durumu güncelleme
+        function updateLobbyStatus() {
+            const lobbyStatus = document.getElementById('lobbyStatus');
+            lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${gameData.players}`;
+            const startGameButton = document.getElementById('startGameButton');
+            startGameButton.disabled = gameData.players < maxPlayers;
+        }
+
+        // Oyunu başlat
+        function startGame() {
+            if (gameData.players < maxPlayers) {
+                alert("Oyunu başlatmak için 2 oyuncu gerekiyor!");
+                return;
+            }
+            window.location.href = "tmbl1game.html";
+        }
+
+        // Sayfa yüklendiğinde kart oluştur ve lobi durumunu güncelle
+        window.onload = () => {
+            generateCard();
+            updateLobbyStatus();
+        };
     </script>
 </body>
 </html>

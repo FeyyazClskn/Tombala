@@ -47,17 +47,15 @@
     <h1>Tombala Lobi</h1>
     <div id="lobbyStatus">Lobideki Oyuncu Sayısı: 0</div>
     <div class="card" id="cardContainer"></div>
-    <button onclick="selectCard()">Kart Seç</button>
     <button id="startGameButton" onclick="startGame()" disabled>Oyunu Başlat</button>
 
     <script>
         const maxPlayers = 2; // Maksimum oyuncu sayısı
-        let gameData = JSON.parse(localStorage.getItem('gameData')) || { players: 0, cards: {}, selected: {} };
+        let players = []; // Oyuncu listesi
+        let currentCard = ''; // Mevcut kart bilgisi
 
         // Kart oluşturma
         function generateCard() {
-            const cardContainer = document.getElementById('cardContainer');
-            cardContainer.innerHTML = '';
             const numbers = Array.from({ length: 90 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
             const selectedNumbers = numbers.slice(0, 15);
             const cardNumbers = Array(27).fill('');
@@ -68,59 +66,54 @@
                 } while (cardNumbers[index] !== '');
                 cardNumbers[index] = num;
             });
-            cardNumbers.forEach((num, i) => {
+
+            const cardContainer = document.getElementById('cardContainer');
+            cardContainer.innerHTML = '';
+            cardNumbers.forEach(num => {
                 const cell = document.createElement('div');
                 cell.textContent = num || '';
                 cardContainer.appendChild(cell);
             });
+
+            currentCard = cardContainer.innerHTML; // Mevcut kartı kaydet
         }
 
-        // Oyuncu kart seçtiğinde
-        function selectCard() {
-            const playerIndex = gameData.players + 1;
-
-            // Zaten kart seçmişse oyuncu sayısını artırma
-            if (gameData.selected[playerIndex]) {
-                alert("Zaten bir kart seçtiniz!");
-                return;
-            }
-
-            if (gameData.players >= maxPlayers) {
+        // Oyuncu lobiye katıldığında
+        function joinLobby() {
+            if (players.length >= maxPlayers) {
                 alert("Lobi dolu! Daha fazla oyuncu giremez.");
                 return;
             }
 
-            const cardContainer = document.getElementById('cardContainer');
-            gameData.players += 1;
-            gameData.cards[`player${playerIndex}`] = cardContainer.innerHTML;
-            gameData.selected[playerIndex] = true; // Oyuncunun kart seçtiğini işaretle
-            localStorage.setItem('gameData', JSON.stringify(gameData));
-
+            const playerName = `Oyuncu ${players.length + 1}`;
+            players.push({ name: playerName, card: currentCard });
             updateLobbyStatus();
-            generateCard();
+            generateCard(); // Bir sonraki oyuncu için yeni kart oluştur
         }
 
         // Lobi durumu güncelleme
         function updateLobbyStatus() {
             const lobbyStatus = document.getElementById('lobbyStatus');
-            lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${gameData.players}`;
+            lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
             const startGameButton = document.getElementById('startGameButton');
-            startGameButton.disabled = gameData.players < maxPlayers;
+            startGameButton.disabled = players.length < maxPlayers;
         }
 
         // Oyunu başlat
         function startGame() {
-            if (gameData.players < maxPlayers) {
+            if (players.length < maxPlayers) {
                 alert("Oyunu başlatmak için 2 oyuncu gerekiyor!");
                 return;
             }
+
+            // Oyuncu verilerini oyun sayfasına gönder
+            sessionStorage.setItem('players', JSON.stringify(players));
             window.location.href = "tmbl1game.html";
         }
 
-        // Sayfa yüklendiğinde kart oluştur ve lobi durumunu güncelle
+        // Sayfa yüklendiğinde kart oluştur
         window.onload = () => {
             generateCard();
-            updateLobbyStatus();
         };
     </script>
 </body>

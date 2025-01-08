@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 let drawnNumbers = [];
 
 // Statik dosyaları sunma (public klasöründen)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Lobi yönetimi
 const lobbies = {}; // { lobbyName: { players: [], cards: {}, drawnNumbers: [] } }

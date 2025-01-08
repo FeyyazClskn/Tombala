@@ -14,11 +14,17 @@
         }
         .card-container {
             display: flex;
-            justify-content: center;
-            gap: 20px;
+            justify-content: space-around;
+            gap: 50px;
+            flex-wrap: wrap;
         }
         .player {
             text-align: center;
+            border: 2px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         .card {
             display: grid;
@@ -82,7 +88,7 @@
 <body>
     <h1>Tombala Oyun</h1>
     <div class="card-container" id="cardContainer"></div>
-    <button id="drawNumberButton" onclick="drawNumber()" disabled>Sayı Çek</button>
+    <button id="drawNumberButton" onclick="requestDrawNumber()" disabled>Sayı Çek</button>
     <div id="drawnNumbers"></div>
 
     <div class="chat">
@@ -131,17 +137,10 @@
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
 
-        // Sayı çekme
-        const drawnNumbers = [];
-        function drawNumber() {
-            const number = Math.floor(Math.random() * 90) + 1;
-            if (!drawnNumbers.includes(number)) {
-                drawnNumbers.push(number);
-                document.getElementById('drawnNumbers').textContent = `Çekilen Sayılar: ${drawnNumbers.join(', ')}`;
-                markNumber(number);
-            } else {
-                drawNumber();
-            }
+        // Sayı çekme isteği
+        function requestDrawNumber() {
+            const lobby = sessionStorage.getItem('lobby');
+            socket.emit('drawNumber', { lobby });
         }
 
         // Çekilen sayıyı işaretleme
@@ -152,45 +151,53 @@
                     cell.classList.add('marked');
                 }
             });
+            checkWin();
         }
 
-        // Mesajlaşma sistemi
-        const messages = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
+        // Kazanma kontrolü
+        function checkWin() {
+            const playerCards = document.querySelectorAll('.player .card');
+            playerCards.forEach((card, index) => {
+                const markedCells = card.querySelectorAll('.marked');
+                if (markedCells.length === 15) {
+                    alert(`TOMBALA! ${players[index].name} kazandı!`);
+                    const lobby = sessionStorage.getItem('lobby');
+                    socket.emit('gameOver', { lobby, winner: players[index].name });
+                }
+            });
+        }
 
+        // Gelen sayıyı işaretle
+        socket.on('newNumber', ({ number }) => {
+            const drawnNumbers = document.getElementById('drawnNumbers');
+            drawnNumbers.textContent = `Çekilen Sayılar: ${number}`;
+            markNumber(number);
+        });
+
+        // Mesaj gönder
         function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
             const message = messageInput.value;
             if (message) {
-                socket.emit('sendMessage', { lobby: sessionStorage.getItem('lobby'), message });
+                const playerName = sessionStorage.getItem('playerName');
+                const lobby = sessionStorage.getItem('lobby');
+                socket.emit('sendMessage', { lobby, message, playerName });
                 messageInput.value = '';
             }
         }
 
+        // Yeni mesaj
         socket.on('newMessage', ({ playerName, message }) => {
+            const messages = document.getElementById('messages');
             const messageElement = document.createElement('div');
             messageElement.textContent = `${playerName}: ${message}`;
             messages.appendChild(messageElement);
             messages.scrollTop = messages.scrollHeight;
         });
 
-        // Oyun bitirme kontrolü
-        function checkWin() {
-            const playerCards = document.querySelectorAll('.player .card');
-            playerCards.forEach((card, index) => {
-                const markedCells = card.querySelectorAll('.marked');
-                if (markedCells.length === 15) {
-                    alert(`Tombala! ${players[index].name} kazandı!`);
-                    socket.emit('gameOver', { winner: players[index].name });
-                }
-            });
-        }
-
+        // Oyun bitimi
         socket.on('gameOver', ({ winner }) => {
-            alert(`Tombala! ${winner} kazandı!`);
-        });
-
-        socket.on('numberDrawn', number => {
-            drawNumber(number);
+            alert(`TOMBALA! ${winner} kazandı!`);
         });
     </script>
 </body>

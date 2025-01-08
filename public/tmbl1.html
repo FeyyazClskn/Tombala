@@ -179,6 +179,12 @@
             }
         }
 
+        socket.on('allPlayersReady', () => {
+    alert("Lobi doldu, oyun başlıyor!");
+    startGame();
+});
+
+
         // Lobi durumu güncelleme
         function updateLobbyStatus() {
             const lobbyStatus = document.getElementById('lobbyStatus');

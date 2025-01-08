@@ -29,6 +29,7 @@ socket.on('joinLobby', ({ lobby, playerName }) => {
     }
 });
 
+    
 
     socket.on('selectCard', ({ lobby, card }) => {
         socket.to(lobby).emit('cardSelected', { playerId: socket.id, card });
@@ -46,6 +47,12 @@ socket.on('joinLobby', ({ lobby, playerName }) => {
     socket.on('sendMessage', ({ lobby, message }) => {
         io.to(lobby).emit('newMessage', message);
     });
+
+    socket.on('updatePlayers', (players) => {
+    const playerCount = players.length;
+    document.getElementById('playerCount').textContent = `${playerCount}/2`;
+});
+
 
     socket.on('disconnect', () => {
         console.log('Bir oyuncu ayrıldı:', socket.id);

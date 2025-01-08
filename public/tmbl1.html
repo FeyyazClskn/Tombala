@@ -152,6 +152,12 @@
     }
 });
 
+        socket.on('startGame', ({ cards }) => {
+    sessionStorage.setItem('players', JSON.stringify(cards));
+    window.location.href = "tmbl1game.html";
+});
+
+
         // Oyuncu lobiye katıldığında
         function joinLobby() {
             if (players.length >= maxPlayers) {

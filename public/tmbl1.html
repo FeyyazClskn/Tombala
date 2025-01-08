@@ -12,12 +12,11 @@
             margin: 0;
             padding: 20px;
         }
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            max-width: 1200px;
-            margin: 0 auto;
+        .card-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
         }
         .card {
             display: grid;
@@ -51,23 +50,34 @@
             font-size: 18px;
         }
         button {
-            margin-top: 20px;
+            margin: 10px;
             padding: 10px 20px;
             font-size: 16px;
+        }
+        .navigation-buttons {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Kart Seçimi</h1>
     <div id="lobbyStatus">Lobideki Oyuncu Sayısı: 0</div>
-    <div class="cards-container" id="cardsContainer"></div>
+    <div class="card-container">
+        <button id="prevCard" onclick="prevCard()" disabled>←</button>
+        <div id="currentCard" class="card"></div>
+        <button id="nextCard" onclick="nextCard()">→</button>
+    </div>
     <button id="selectCardButton" onclick="joinLobby()" disabled>Kart Seç ve Katıl</button>
 
     <script>
         const maxPlayers = 2; // Maksimum oyuncu sayısı
         let players = []; // Oyuncu listesi
         let selectedCard = null; // Seçilen kart
-        const cardsContainer = document.getElementById('cardsContainer');
+        let currentIndex = 0; // Mevcut kart indeksi
+        const allCards = []; // Tüm kartlar
+        const currentCard = document.getElementById('currentCard');
+        const prevCardButton = document.getElementById('prevCard');
+        const nextCardButton = document.getElementById('nextCard');
         const selectCardButton = document.getElementById('selectCardButton');
 
         // Rastgele bir kart oluştur
@@ -85,31 +95,50 @@
             return cardNumbers;
         }
 
-        // Kartları oluştur ve ekrana yerleştir
+        // Kartları oluştur
         function generateCards() {
             for (let i = 0; i < 48; i++) {
-                const card = document.createElement('div');
-                card.className = 'card';
                 const cardNumbers = generateRandomCard();
-                cardNumbers.forEach(num => {
-                    const cell = document.createElement('div');
-                    cell.textContent = num || '';
-                    card.appendChild(cell);
-                });
-                card.onclick = () => selectCard(card);
-                cardsContainer.appendChild(card);
+                allCards.push(cardNumbers);
+            }
+            updateCard();
+        }
+
+        // Mevcut kartı güncelle
+        function updateCard() {
+            currentCard.innerHTML = '';
+            const cardNumbers = allCards[currentIndex];
+            cardNumbers.forEach(num => {
+                const cell = document.createElement('div');
+                cell.textContent = num || '';
+                currentCard.appendChild(cell);
+            });
+            prevCardButton.disabled = currentIndex === 0;
+            nextCardButton.disabled = currentIndex === allCards.length - 1;
+            selectCardButton.disabled = selectedCard === currentIndex ? false : true;
+        }
+
+        // Önceki karta geçiş
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        // Sonraki karta geçiş
+        function nextCard() {
+            if (currentIndex < allCards.length - 1) {
+                currentIndex++;
+                updateCard();
             }
         }
 
         // Kart seçimi
-        function selectCard(card) {
-            if (selectedCard) {
-                selectedCard.classList.remove('selected');
-            }
-            selectedCard = card;
-            selectedCard.classList.add('selected');
+        currentCard.onclick = () => {
+            selectedCard = currentIndex;
             selectCardButton.disabled = false;
-        }
+        };
 
         // Oyuncu lobiye katıldığında
         function joinLobby() {
@@ -118,13 +147,8 @@
                 return;
             }
 
-            if (!selectedCard) {
-                alert("Lütfen bir kart seçin!");
-                return;
-            }
-
             const playerName = `Oyuncu ${players.length + 1}`;
-            players.push({ name: playerName, card: selectedCard.innerHTML });
+            players.push({ name: playerName, card: allCards[selectedCard] });
             updateLobbyStatus();
 
             // Kart seçildikten sonra yeni kart seçilemesin

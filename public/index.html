@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombala - Giriş</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tombala Oyununa Hoş Geldiniz!</h1>
+        <input type="text" id="playerName" placeholder="Oyuncu Adınızı Girin" oninput="validateInput()">
+        <br>
+        <button id="joinBtn" disabled onclick="joinLobby()">Katıl</button>
+    </div>
+
+    <script>
+        function validateInput() {
+            const playerName = document.getElementById('playerName').value;
+            const joinBtn = document.getElementById('joinBtn');
+            joinBtn.disabled = playerName.trim() === '';
+        }
+
+        function joinLobby() {
+            const playerName = document.getElementById('playerName').value.trim();
+            if (playerName) {
+                localStorage.setItem('playerName', playerName);
+                window.location.href = 'lobi.html';
+            }
+        }
+    </script>
+</body>
+</html>

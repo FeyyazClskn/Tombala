@@ -20,8 +20,11 @@ io.on('connection', (socket) => {
 
     // Oyuncu bir lobiye katılıyor
 socket.on('joinLobby', ({ lobby, playerName }) => {
+    console.log(`Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName}`);
+
     if (!lobby || !playerName) {
-        console.log('Sunucu: Lobi adı veya oyuncu adı eksik.');
+        console.log('Sunucu: Eksik lobi veya oyuncu adı.');
+        socket.emit('error', { message: 'Eksik lobi veya oyuncu adı.' });
         return;
     }
 
@@ -30,11 +33,15 @@ socket.on('joinLobby', ({ lobby, playerName }) => {
         lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
     }
 
-    lobbies[lobby].players.push({ id: socket.id, name: playerName });
+    const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
+    if (!isPlayerInLobby) {
+        lobbies[lobby].players.push({ id: socket.id, name: playerName });
+    }
+
     socket.join(lobby);
     io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
 
-    console.log(`Sunucu: Oyuncu ${playerName} lobiye katıldı: ${lobby}`);
+    console.log(`Sunucu: Oyuncu ${playerName}, ${lobby} lobisine katıldı.`);
 });
 
 

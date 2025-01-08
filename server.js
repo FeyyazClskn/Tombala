@@ -54,8 +54,14 @@ io.on('connection', (socket) => {
     });
 
     // Sayı çekme işlemi
-    socket.on('drawNumber', ({ lobby }) => {
-        if (!lobbies[lobby]) return;
+socket.on('drawNumber', () => {
+        let number;
+        do {
+            number = Math.floor(Math.random() * 90) + 1;
+        } while (drawnNumbers.includes(number));
+        drawnNumbers.push(number);
+        io.emit('newNumber', { number });
+    });
 
         // Çekilen sayı seçimi
         let newNumber;

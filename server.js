@@ -20,16 +20,24 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('joinLobby', ({ lobby, playerName }) => {
-        if (lobbies[lobby].players.length < 2) {
-            lobbies[lobby].players.push({ id: socket.id, name: playerName });
-            socket.join(lobby);
-            console.log(`${playerName} joined lobby ${lobby}.`);
-            io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
-        } else {
-            socket.emit('lobbyFull');
+socket.on('joinLobby', ({ lobby, playerName }) => {
+    if (lobbies[lobby].players.length < 2) {
+        lobbies[lobby].players.push({ id: socket.id, name: playerName });
+        socket.join(lobby);
+        console.log(`${playerName} joined lobby ${lobby}.`);
+
+        // Oyuncu bilgilerini lobideki tüm kullanıcılara gönder
+        io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+
+        // Eğer lobi dolduysa oyun başlat
+        if (lobbies[lobby].players.length === 2) {
+            io.to(lobby).emit('allPlayersReady');
         }
-    });
+    } else {
+        socket.emit('lobbyFull');
+    }
+});
+
 
     socket.on('selectCard', ({ lobby, card }) => {
         const player = lobbies[lobby].players.find(p => p.id === socket.id);

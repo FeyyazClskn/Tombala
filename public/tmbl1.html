@@ -57,48 +57,54 @@
         .navigation-buttons {
             margin-top: 20px;
         }
+        #playerUpdates {
+            font-size: 16px;
+            margin-top: 10px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <h1>Kart Seçimi</h1>
     <div id="lobbyStatus">Lobideki Oyuncu Sayısı: 0</div>
+    <div id="playerUpdates"></div>
     <div class="card-container">
         <button id="prevCard" onclick="prevCard()" disabled>←</button>
         <div id="currentCard" class="card"></div>
         <button id="nextCard" onclick="nextCard()">→</button>
     </div>
-    <button id="selectCardButton" onclick="joinLobby()" disabled>Kart Seç ve Katıl</button>
+    <button id="selectCardButton" onclick="selectCard()" disabled>Kart Seç ve Katıl</button>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const maxPlayers = 2; // Maksimum oyuncu sayısı
-        let players = []; // Oyuncu listesi
-        let selectedCard = null; // Seçilen kart
-        let currentIndex = 0; // Mevcut kart indeksi
-        const allCards = []; // Tüm kartlar
-        const currentCard = document.getElementById('currentCard');
-        const prevCardButton = document.getElementById('prevCard');
-        const nextCardButton = document.getElementById('nextCard');
-        const selectCardButton = document.getElementById('selectCardButton');
+        const socket = io();
+        const lobby = 'lobi1';
+        const playerName = prompt('Lütfen isminizi girin:');
+        const allCards = []; // Kartlar
+        let selectedCard = null;
+        let currentIndex = 0;
 
-        const socket = io(); // Sunucuya bağlan
+        // Oyuncu lobiye katılıyor
+        socket.emit('joinLobby', { lobby, playerName });
 
-        // Sayfa yüklendiğinde kartları oluştur ve olayı dinle
-        window.onload = () => {
-            generateCards();
+        // Lobi durumu güncelleme
+        socket.on('updatePlayers', (players) => {
+            const lobbyStatus = document.getElementById('lobbyStatus');
+            lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
+        });
 
-            // Oyuncu sayısını güncelle
-            socket.on('updatePlayers', (players) => {
-                const lobbyStatus = document.getElementById('lobbyStatus');
-                lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
-            });
+        // Diğer oyuncunun kart seçimi tamamlandı
+        socket.on('playerSelectedCard', ({ playerName }) => {
+            const playerUpdates = document.getElementById('playerUpdates');
+            const message = `${playerName}: Kartını seçti!`;
+            playerUpdates.textContent = message;
+        });
 
-            // Tüm oyuncular hazır olduğunda oyunu başlat
-            socket.on('allPlayersReady', () => {
-                alert("Lobi doldu, oyun başlıyor!");
-                startGame();
-            });
-        };
+        // Oyun başladığında oyun sayfasına yönlendir
+        socket.on('startGame', ({ players }) => {
+            sessionStorage.setItem('players', JSON.stringify(players));
+            window.location.href = "tmbl1game.html";
+        });
 
         // Rastgele bir kart oluştur
         function generateRandomCard() {
@@ -126,6 +132,7 @@
 
         // Mevcut kartı güncelle
         function updateCard() {
+            const currentCard = document.getElementById('currentCard');
             currentCard.innerHTML = '';
             const cardNumbers = allCards[currentIndex];
             cardNumbers.forEach(num => {
@@ -133,9 +140,10 @@
                 cell.textContent = num || '';
                 currentCard.appendChild(cell);
             });
-            prevCardButton.disabled = currentIndex === 0;
-            nextCardButton.disabled = currentIndex === allCards.length - 1;
-            selectCardButton.disabled = selectedCard === currentIndex ? false : true;
+
+            document.getElementById('prevCard').disabled = currentIndex === 0;
+            document.getElementById('nextCard').disabled = currentIndex === allCards.length - 1;
+            document.getElementById('selectCardButton').disabled = selectedCard === currentIndex ? false : true;
         }
 
         // Önceki karta geçiş
@@ -155,46 +163,16 @@
         }
 
         // Kart seçimi
-        currentCard.onclick = () => {
+        function selectCard() {
+            const selectedNumbers = allCards[currentIndex];
             selectedCard = currentIndex;
-            selectCardButton.disabled = false;
+            socket.emit('selectCard', { lobby, card: selectedNumbers });
+        }
+
+        // Sayfa yüklendiğinde kartları oluştur
+        window.onload = () => {
+            generateCards();
         };
-
-        // Oyuncu lobiye katıldığında
-        function joinLobby() {
-            if (players.length >= maxPlayers) {
-                alert("Lobi dolu! Daha fazla oyuncu giremez.");
-                return;
-            }
-
-            const playerName = `Oyuncu ${players.length + 1}`;
-            players.push({ name: playerName, card: allCards[selectedCard] });
-            updateLobbyStatus();
-
-            // Kart seçildikten sonra yeni kart seçilemesin
-            selectedCard = null;
-            selectCardButton.disabled = true;
-
-            // Oyuncu bilgilerini sunucuya gönder
-            socket.emit('joinLobby', { lobby: 'lobi1', playerName });
-
-            if (players.length === maxPlayers) {
-                alert("Lobi dolu, oyun başlıyor!");
-                startGame();
-            }
-        }
-
-        // Lobi durumu güncelleme
-        function updateLobbyStatus() {
-            const lobbyStatus = document.getElementById('lobbyStatus');
-            lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
-        }
-
-        // Oyunu başlat
-        function startGame() {
-            sessionStorage.setItem('players', JSON.stringify(players));
-            window.location.href = "tmbl1game.html";
-        }
     </script>
 </body>
 </html>

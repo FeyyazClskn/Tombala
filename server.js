@@ -55,30 +55,25 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('drawNumber', ({ lobby }) => {
-    if (!lobbies[lobby]) return;
+    // Sayı çekme
+    socket.on('drawNumber', () => {
+        let newNumber;
+        do {
+            newNumber = Math.floor(Math.random() * 90) + 1;
+        } while (drawnNumbers.includes(newNumber));
 
-    const drawnNumbers = lobbies[lobby].drawnNumbers || [];
-    let newNumber;
+        drawnNumbers.push(newNumber);
+        io.emit('newNumber', newNumber);
+    });
 
-    do {
-        newNumber = Math.floor(Math.random() * 90) + 1; // 1 ile 90 arasında rastgele bir sayı
-    } while (drawnNumbers.includes(newNumber));
+    socket.on('sendMessage', message => {
+        io.emit('newMessage', message);
+    });
 
-    drawnNumbers.push(newNumber);
-    lobbies[lobby].drawnNumbers = drawnNumbers;
-
-    io.to(lobby).emit('newNumber', { number: newNumber });
+    socket.on('disconnect', () => {
+        console.log('Bir kullanıcı ayrıldı:', socket.id);
+    });
 });
-
-    socket.on('sendMessage', ({ lobby, message }) => {
-    const player = lobbies[lobby]?.players.find(p => p.id === socket.id);
-    if (player) {
-        io.to(lobby).emit('newMessage', { playerName: player.name, message });
-    }
-});
-
-
 
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {

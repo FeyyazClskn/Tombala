@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tombala - Oyun</title>
+    <title>Tombala Oyun</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
+            background-color: #f0f0f0;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
         }
-        .player {
-            margin: 20px;
-            text-align: center;
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
         }
         .card {
-            border: 2px solid #000;
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 2px;
+            margin: 20px auto;
+            width: 360px;
+            border: 2px solid #000;
         }
         .card div {
             width: 40px;
@@ -41,128 +42,38 @@
         .card div:nth-child(odd) {
             background-color: #fff;
         }
-        .chat-container, .number-draw-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px 0;
-        }
-        .chat-container {
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            padding: 10px;
-            background: #fff;
-        }
-        .chat-messages {
-            height: 200px;
-            overflow-y: auto;
-            margin-bottom: 10px;
-        }
-        .chat-input {
-            display: flex;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px 0 0 5px;
-        }
-        .chat-input button {
-            padding: 10px;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-        }
-        .number-draw-container button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .drawn-numbers {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
-    <h1>Tombala Oyun Ekranı</h1>
-    <div id="playerCards"></div>
-
-    <!-- Sohbet Alanı -->
-    <div class="chat-container">
-        <h3>Sohbet</h3>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Mesajınızı yazın...">
-            <button onclick="sendMessage()">Gönder</button>
-        </div>
-    </div>
-
-    <!-- Sayı Çekme Alanı -->
-    <div class="number-draw-container">
-        <button onclick="drawNumber()">Sayı Çek</button>
-        <div class="drawn-numbers" id="drawnNumbers">Çekilen Sayılar: -</div>
-    </div>
+    <h1>Tombala Oyun</h1>
+    <div class="card-container" id="cardContainer"></div>
+    <button onclick="drawNumber()">Sayı Çek</button>
+    <div id="drawnNumbers"></div>
 
     <script>
-        // Kart verilerini almak
-        const gameData = JSON.parse(localStorage.getItem('gameData')) || { players: 0, cards: {} };
+        // Oyuncu verilerini al
+        const players = JSON.parse(sessionStorage.getItem('players')) || [];
+        const cardContainer = document.getElementById('cardContainer');
+
+        // Kartları ekrana getir
+        players.forEach(player => {
+            const playerCard = document.createElement('div');
+            playerCard.className = 'card';
+            playerCard.innerHTML = player.card;
+            cardContainer.appendChild(playerCard);
+        });
+
+        // Sayı çekme
         const drawnNumbers = [];
-        const chatMessages = [];
-
-        function renderPlayerCards() {
-            const playerCardsContainer = document.getElementById('playerCards');
-            playerCardsContainer.innerHTML = '';
-            for (let i = 1; i <= gameData.players; i++) {
-                const playerDiv = document.createElement('div');
-                playerDiv.classList.add('player');
-                playerDiv.innerHTML = `<h2>Oyuncu ${i}</h2><div class="card">${gameData.cards[`player${i}`]}</div>`;
-                playerCardsContainer.appendChild(playerDiv);
-            }
-        }
-
-        // Sohbet fonksiyonları
-        function sendMessage() {
-            const chatInput = document.getElementById('chatInput');
-            const message = chatInput.value.trim();
-            if (message) {
-                chatMessages.push(`Oyuncu: ${message}`);
-                chatInput.value = '';
-                updateChat();
-            }
-        }
-
-        function updateChat() {
-            const chatMessagesDiv = document.getElementById('chatMessages');
-            chatMessagesDiv.innerHTML = chatMessages.map(msg => `<p>${msg}</p>`).join('');
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll'u aşağıya kaydır
-        }
-
-        // Sayı çekme fonksiyonları
         function drawNumber() {
-            if (drawnNumbers.length >= 90) {
-                alert('Tüm sayılar çekildi!');
-                return;
+            const number = Math.floor(Math.random() * 90) + 1;
+            if (!drawnNumbers.includes(number)) {
+                drawnNumbers.push(number);
+                document.getElementById('drawnNumbers').textContent = `Çekilen Sayılar: ${drawnNumbers.join(', ')}`;
+            } else {
+                drawNumber();
             }
-            let number;
-            do {
-                number = Math.floor(Math.random() * 90) + 1;
-            } while (drawnNumbers.includes(number));
-            drawnNumbers.push(number);
-            updateDrawnNumbers();
         }
-
-        function updateDrawnNumbers() {
-            document.getElementById('drawnNumbers').textContent = `Çekilen Sayılar: ${drawnNumbers.join(', ')}`;
-        }
-
-        // Başlangıçta kartları render et
-        renderPlayerCards();
     </script>
 </body>
 </html>

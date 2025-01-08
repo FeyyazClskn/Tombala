@@ -19,15 +19,24 @@ io.on('connection', (socket) => {
     console.log('Bir kullanıcı bağlandı:', socket.id);
 
     // Oyuncu bir lobiye katılıyor
-    socket.on('joinLobby', ({ lobby, playerName }) => {
-        if (!lobbies[lobby]) {
-            lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
-        }
+socket.on('joinLobby', ({ lobby, playerName }) => {
+    if (!lobby || !playerName) {
+        console.log('Sunucu: Lobi adı veya oyuncu adı eksik.');
+        return;
+    }
 
-        lobbies[lobby].players.push({ id: socket.id, name: playerName });
-        socket.join(lobby);
-        io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
-    });
+    if (!lobbies[lobby]) {
+        console.log(`Sunucu: Yeni bir lobi oluşturuldu - ${lobby}`);
+        lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
+    }
+
+    lobbies[lobby].players.push({ id: socket.id, name: playerName });
+    socket.join(lobby);
+    io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+
+    console.log(`Sunucu: Oyuncu ${playerName} lobiye katıldı: ${lobby}`);
+});
+
 
     // Kart seçimi
     socket.on('selectCard', ({ lobby, card }) => {

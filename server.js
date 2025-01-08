@@ -55,8 +55,13 @@ io.on('connection', (socket) => {
     // Sayı çekme işlemi
 socket.on('drawNumber', ({ lobby }) => {
     console.log(`Sunucu: drawNumber olayı alındı. Lobi: ${lobby}`);
-    if (!lobbies[lobby]) return;
-    
+    console.log('Sunucu: Mevcut lobbies durumu:', lobbies);
+
+    if (!lobbies[lobby]) {
+        console.log(`Sunucu: Lobi "${lobby}" bulunamadı.`);
+        return;
+    }
+
     const lobbyData = lobbies[lobby];
     let newNumber;
 
@@ -69,6 +74,7 @@ socket.on('drawNumber', ({ lobby }) => {
     io.to(lobby).emit('newNumber', { number: newNumber });
     console.log(`Sunucu: Çekilen sayı ${newNumber} lobisine gönderildi.`);
 });
+
 
 
     // Oyuncu ayrıldığında

@@ -31,13 +31,16 @@ socket.on('joinLobby', ({ lobby, playerName }) => {
 
     
 
-    socket.on('selectCard', ({ lobby, card }) => {
-        socket.to(lobby).emit('cardSelected', { playerId: socket.id, card });
-        const allPlayersSelected = lobbies[lobby].players.every(player => player.card);
-        if (allPlayersSelected) {
-            io.to(lobby).emit('startGame');
-        }
-    });
+socket.on('selectCard', ({ lobby, card }) => {
+    const player = lobbies[lobby].players.find(p => p.id === socket.id);
+    if (player) player.card = card;
+
+    const allPlayersReady = lobbies[lobby].players.every(p => p.card);
+    if (allPlayersReady) {
+        io.to(lobby).emit('allPlayersReady');
+    }
+});
+
 
     socket.on('drawNumber', ({ lobby }) => {
         const number = Math.floor(Math.random() * 90) + 1;

@@ -69,8 +69,8 @@
     </div>
     <button id="selectCardButton" onclick="joinLobby()" disabled>Kart Seç ve Katıl</button>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io(); // Sunucuya bağlan
         const maxPlayers = 2; // Maksimum oyuncu sayısı
         let players = []; // Oyuncu listesi
         let selectedCard = null; // Seçilen kart
@@ -80,6 +80,25 @@
         const prevCardButton = document.getElementById('prevCard');
         const nextCardButton = document.getElementById('nextCard');
         const selectCardButton = document.getElementById('selectCardButton');
+
+        const socket = io(); // Sunucuya bağlan
+
+        // Sayfa yüklendiğinde kartları oluştur ve olayı dinle
+        window.onload = () => {
+            generateCards();
+
+            // Oyuncu sayısını güncelle
+            socket.on('updatePlayers', (players) => {
+                const lobbyStatus = document.getElementById('lobbyStatus');
+                lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
+            });
+
+            // Tüm oyuncular hazır olduğunda oyunu başlat
+            socket.on('allPlayersReady', () => {
+                alert("Lobi doldu, oyun başlıyor!");
+                startGame();
+            });
+        };
 
         // Rastgele bir kart oluştur
         function generateRandomCard() {
@@ -141,23 +160,6 @@
             selectCardButton.disabled = false;
         };
 
-        socket.on('updatePlayers', (players) => {
-    const lobbyStatus = document.getElementById('lobbyStatus');
-    lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
-
-    if (players.length === 2) {
-        // İki oyuncu varsa oyunu başlat
-        alert("Lobi doldu, oyun başlıyor!");
-        startGame();
-    }
-});
-
-        socket.on('startGame', ({ cards }) => {
-    sessionStorage.setItem('players', JSON.stringify(cards));
-    window.location.href = "tmbl1game.html";
-});
-
-
         // Oyuncu lobiye katıldığında
         function joinLobby() {
             if (players.length >= maxPlayers) {
@@ -173,17 +175,14 @@
             selectedCard = null;
             selectCardButton.disabled = true;
 
+            // Oyuncu bilgilerini sunucuya gönder
+            socket.emit('joinLobby', { lobby: 'lobi1', playerName });
+
             if (players.length === maxPlayers) {
                 alert("Lobi dolu, oyun başlıyor!");
                 startGame();
             }
         }
-
-        socket.on('allPlayersReady', () => {
-    alert("Lobi doldu, oyun başlıyor!");
-    startGame();
-});
-
 
         // Lobi durumu güncelleme
         function updateLobbyStatus() {
@@ -196,11 +195,6 @@
             sessionStorage.setItem('players', JSON.stringify(players));
             window.location.href = "tmbl1game.html";
         }
-
-        // Sayfa yüklendiğinde kartları oluştur
-        window.onload = () => {
-            generateCards();
-        };
     </script>
 </body>
 </html>

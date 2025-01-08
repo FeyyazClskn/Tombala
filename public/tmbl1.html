@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tombala Lobi</title>
+    <title>Tombala Kart Seçimi</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,22 +12,28 @@
             margin: 0;
             padding: 20px;
         }
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
         .card {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 2px;
-            margin: 20px auto;
-            width: 360px;
             border: 2px solid #000;
+            cursor: pointer;
         }
         .card div {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
             border: 1px solid black;
         }
@@ -37,25 +43,35 @@
         .card div:nth-child(odd) {
             background-color: #fff;
         }
+        .selected {
+            outline: 3px solid green;
+        }
         #lobbyStatus {
             margin: 20px;
             font-size: 18px;
         }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
-    <h1>Tombala Lobi</h1>
+    <h1>Kart Seçimi</h1>
     <div id="lobbyStatus">Lobideki Oyuncu Sayısı: 0</div>
-    <div class="card" id="cardContainer"></div>
-    <button id="startGameButton" onclick="startGame()" disabled>Oyunu Başlat</button>
+    <div class="cards-container" id="cardsContainer"></div>
+    <button id="selectCardButton" onclick="joinLobby()" disabled>Kart Seç ve Katıl</button>
 
     <script>
         const maxPlayers = 2; // Maksimum oyuncu sayısı
         let players = []; // Oyuncu listesi
-        let currentCard = ''; // Mevcut kart bilgisi
+        let selectedCard = null; // Seçilen kart
+        const cardsContainer = document.getElementById('cardsContainer');
+        const selectCardButton = document.getElementById('selectCardButton');
 
-        // Kart oluşturma
-        function generateCard() {
+        // Rastgele bir kart oluştur
+        function generateRandomCard() {
             const numbers = Array.from({ length: 90 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
             const selectedNumbers = numbers.slice(0, 15);
             const cardNumbers = Array(27).fill('');
@@ -66,16 +82,33 @@
                 } while (cardNumbers[index] !== '');
                 cardNumbers[index] = num;
             });
+            return cardNumbers;
+        }
 
-            const cardContainer = document.getElementById('cardContainer');
-            cardContainer.innerHTML = '';
-            cardNumbers.forEach(num => {
-                const cell = document.createElement('div');
-                cell.textContent = num || '';
-                cardContainer.appendChild(cell);
-            });
+        // Kartları oluştur ve ekrana yerleştir
+        function generateCards() {
+            for (let i = 0; i < 48; i++) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const cardNumbers = generateRandomCard();
+                cardNumbers.forEach(num => {
+                    const cell = document.createElement('div');
+                    cell.textContent = num || '';
+                    card.appendChild(cell);
+                });
+                card.onclick = () => selectCard(card);
+                cardsContainer.appendChild(card);
+            }
+        }
 
-            currentCard = cardContainer.innerHTML; // Mevcut kartı kaydet
+        // Kart seçimi
+        function selectCard(card) {
+            if (selectedCard) {
+                selectedCard.classList.remove('selected');
+            }
+            selectedCard = card;
+            selectedCard.classList.add('selected');
+            selectCardButton.disabled = false;
         }
 
         // Oyuncu lobiye katıldığında
@@ -85,35 +118,40 @@
                 return;
             }
 
+            if (!selectedCard) {
+                alert("Lütfen bir kart seçin!");
+                return;
+            }
+
             const playerName = `Oyuncu ${players.length + 1}`;
-            players.push({ name: playerName, card: currentCard });
+            players.push({ name: playerName, card: selectedCard.innerHTML });
             updateLobbyStatus();
-            generateCard(); // Bir sonraki oyuncu için yeni kart oluştur
+
+            // Kart seçildikten sonra yeni kart seçilemesin
+            selectedCard = null;
+            selectCardButton.disabled = true;
+
+            if (players.length === maxPlayers) {
+                alert("Lobi dolu, oyun başlıyor!");
+                startGame();
+            }
         }
 
         // Lobi durumu güncelleme
         function updateLobbyStatus() {
             const lobbyStatus = document.getElementById('lobbyStatus');
             lobbyStatus.textContent = `Lobideki Oyuncu Sayısı: ${players.length}`;
-            const startGameButton = document.getElementById('startGameButton');
-            startGameButton.disabled = players.length < maxPlayers;
         }
 
         // Oyunu başlat
         function startGame() {
-            if (players.length < maxPlayers) {
-                alert("Oyunu başlatmak için 2 oyuncu gerekiyor!");
-                return;
-            }
-
-            // Oyuncu verilerini oyun sayfasına gönder
             sessionStorage.setItem('players', JSON.stringify(players));
             window.location.href = "tmbl1game.html";
         }
 
-        // Sayfa yüklendiğinde kart oluştur
+        // Sayfa yüklendiğinde kartları oluştur
         window.onload = () => {
-            generateCard();
+            generateCards();
         };
     </script>
 </body>

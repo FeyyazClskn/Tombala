@@ -35,14 +35,85 @@
             font-weight: bold;
             border: 1px solid black;
         }
+        .card div:nth-child(even) {
+            background-color: #ffcccb;
+        }
+        .card div:nth-child(odd) {
+            background-color: #fff;
+        }
+        .chat-container, .number-draw-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+        .chat-container {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+        .chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .chat-input {
+            display: flex;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+        }
+        .chat-input button {
+            padding: 10px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        .number-draw-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .drawn-numbers {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <h1>Tombala Oyun Ekranı</h1>
     <div id="playerCards"></div>
 
+    <!-- Sohbet Alanı -->
+    <div class="chat-container">
+        <h3>Sohbet</h3>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Mesajınızı yazın...">
+            <button onclick="sendMessage()">Gönder</button>
+        </div>
+    </div>
+
+    <!-- Sayı Çekme Alanı -->
+    <div class="number-draw-container">
+        <button onclick="drawNumber()">Sayı Çek</button>
+        <div class="drawn-numbers" id="drawnNumbers">Çekilen Sayılar: -</div>
+    </div>
+
     <script>
+        // Kart verilerini almak
         const gameData = JSON.parse(localStorage.getItem('gameData')) || { players: 0, cards: {} };
+        const drawnNumbers = [];
+        const chatMessages = [];
 
         function renderPlayerCards() {
             const playerCardsContainer = document.getElementById('playerCards');
@@ -55,6 +126,42 @@
             }
         }
 
+        // Sohbet fonksiyonları
+        function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            if (message) {
+                chatMessages.push(`Oyuncu: ${message}`);
+                chatInput.value = '';
+                updateChat();
+            }
+        }
+
+        function updateChat() {
+            const chatMessagesDiv = document.getElementById('chatMessages');
+            chatMessagesDiv.innerHTML = chatMessages.map(msg => `<p>${msg}</p>`).join('');
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll'u aşağıya kaydır
+        }
+
+        // Sayı çekme fonksiyonları
+        function drawNumber() {
+            if (drawnNumbers.length >= 90) {
+                alert('Tüm sayılar çekildi!');
+                return;
+            }
+            let number;
+            do {
+                number = Math.floor(Math.random() * 90) + 1;
+            } while (drawnNumbers.includes(number));
+            drawnNumbers.push(number);
+            updateDrawnNumbers();
+        }
+
+        function updateDrawnNumbers() {
+            document.getElementById('drawnNumbers').textContent = `Çekilen Sayılar: ${drawnNumbers.join(', ')}`;
+        }
+
+        // Başlangıçta kartları render et
         renderPlayerCards();
     </script>
 </body>

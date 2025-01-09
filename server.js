@@ -70,21 +70,21 @@ io.on('connection', (socket) => {
     socket.on('drawNumber', ({ lobby }) => {
     if (!lobbies[lobby]) return;
 
-    const drawnNumbers = lobbies[lobby].drawnNumbers;
+    // 1-90 arası rastgele bir sayı çek
+    const number = Math.floor(Math.random() * 90) + 1;
 
-    if (drawnNumbers.length >= 90) {
-        socket.emit('error', { message: 'Tüm sayılar çekildi!' });
-        return;
+    // Daha önce çekilmiş mi kontrol et
+    if (!lobbies[lobby].drawnNumbers.includes(number)) {
+        lobbies[lobby].drawnNumbers.push(number);
+
+        // Çekilen sayıyı lobideki tüm istemcilere gönder
+        io.to(lobby).emit('numberDrawn', { number });
+        console.log(`Lobi ${lobby}: Çekilen sayı ${number}`);
+    } else {
+        console.log(`Lobi ${lobby}: Sayı tekrar çekildi. ${number}`);
     }
+});
 
-            let randomNumber;
-        do {
-            randomNumber = Math.floor(Math.random() * 90) + 1; // 1-90 arasında rastgele sayı
-    }     while (drawnNumbers.includes(randomNumber));
-
-        drawnNumbers.push(randomNumber);
-        io.to(lobby).emit('numberDrawn', { number: randomNumber }); // Tüm oyunculara gönder
-    });
 
 
     // Oyuncu ayrıldığında

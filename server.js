@@ -32,19 +32,19 @@ io.on('connection', (socket) => {
             lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
         }
 
-        const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
+        const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === .id);
         if (!isPlayerInLobby) {
-            lobbies[lobby].players.push({ id: socket.id, name: playerName });
+            lobbies[lobby].players.push({ id: .id, name: playerName });
         }
 
-        socket.join(lobby);
+        .join(lobby);
         io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
 
         console.log(`Sunucu: Oyuncu ${playerName}, ${lobby} lobisine katıldı.`);
     });
 
     // Kart seçimi
-    socket.on('selectCard', ({ lobby, card }) => {
+    .on('selectCard', ({ lobby, card }) => {
         if (!lobbies[lobby]) return;
 
         lobbies[lobby].cards[socket.id] = card;
@@ -68,6 +68,7 @@ io.on('connection', (socket) => {
 
     // Sayı çekme
     socket.on('drawNumber', ({ lobby }) => {
+        console.log(`Sayı çekme olayı alındı: Lobi = ${lobby}`);
         if (!lobbies[lobby]) return;
 
         const drawnNumbers = lobbies[lobby].drawnNumbers;

@@ -66,6 +66,27 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Sayı çekme olayı
+    socket.on('drawNumber', ({ lobby }) => {
+    if (!lobbies[lobby]) return;
+
+    const drawnNumbers = lobbies[lobby].drawnNumbers;
+
+    if (drawnNumbers.length >= 90) {
+        socket.emit('error', { message: 'Tüm sayılar çekildi!' });
+        return;
+    }
+
+            let randomNumber;
+        do {
+            randomNumber = Math.floor(Math.random() * 90) + 1; // 1-90 arasında rastgele sayı
+    }     while (drawnNumbers.includes(randomNumber));
+
+        drawnNumbers.push(randomNumber);
+        io.to(lobby).emit('numberDrawn', { number: randomNumber }); // Tüm oyunculara gönder
+    });
+
+
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {
         console.log('Bir kullanıcı ayrıldı:', socket.id);

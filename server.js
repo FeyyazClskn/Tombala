@@ -19,7 +19,6 @@ io.on('connection', (socket) => {
 
     // Oyuncu bir lobiye katılıyor
     socket.on('joinLobby', ({ lobby, playerName }) => {
-    console.log(Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName});
 
     if (!lobby || !playerName) {
         console.log('Sunucu: Eksik lobi veya oyuncu adı.');

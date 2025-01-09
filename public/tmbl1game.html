@@ -115,6 +115,7 @@
         const drawnNumberElement = document.getElementById('drawnNumber');
         const messages = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
+        console.log("tmbl1game.html yüklendi.");
 
         // Kartları oluşturma
         players.forEach(player => {
@@ -143,9 +144,11 @@
         });
 
         // Yeni sayı çekildiğinde güncelleme
-        socket.on('numberDrawn', ({ number }) => {
+            socket.on('numberDrawn', ({ number }) => {
+            console.log(`Yeni sayı çekildi: ${number}`);
             drawnNumberElement.textContent = `Çekilen Sayı: ${number}`;
         });
+
 
         // Mesaj gönderme
         document.getElementById('sendMessageButton').addEventListener('click', () => {

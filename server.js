@@ -16,7 +16,8 @@ app.use(express.static('public'));
 const lobbies = {}; // { lobbyName: { players: [], cards: {}, drawnNumbers: [] } }
 
 io.on('connection', (socket) => {
-    console.log('Bir kullanıcı bağlandı:', socket.id);
+    console.log('Socket.IO bağlantısı sağlandı:', socket.id);
+});
 
     // Oyuncu bir lobiye katılıyor
     socket.on('joinLobby', ({ lobby, playerName }) => {

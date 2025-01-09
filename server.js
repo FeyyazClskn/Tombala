@@ -37,7 +37,7 @@ io.on('connection', (socket) => {
             lobbies[lobby].players.push({ id: socket.id, name: playerName });
         }
 
-        .join(lobby);
+        socket.join(lobby);
         io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
 
         console.log(`Sunucu: Oyuncu ${playerName}, ${lobby} lobisine katıldı.`);

@@ -95,6 +95,8 @@
 <body>
     <h1>Tombala Oyun</h1>
     <div class="card-container" id="cardContainer"></div>
+    <button id="drawButton">Sayı Çek</button>
+    <div id="drawnNumber"></div>
 
     <div class="chat">
         <div class="messages" id="messages"></div>
@@ -135,6 +137,23 @@
         } else {
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
+
+        const drawnNumbers = [];
+            drawButton.addEventListener('click', () => {
+            if (drawnNumbers.length >= 90) {
+                alert("Tüm sayılar çekildi!");
+                drawButton.disabled = true;
+                return;
+            }
+
+            let randomNumber;
+            do {
+                randomNumber = Math.floor(Math.random() * 90) + 1; // 1-90 arasında sayı
+            } while (drawnNumbers.includes(randomNumber));
+
+            drawnNumbers.push(randomNumber);
+            drawnNumberElement.textContent = `Çekilen Sayı: ${randomNumber}`;
+        })
 
         document.getElementById('sendMessageButton').addEventListener('click', () => {
             const message = messageInput.value;

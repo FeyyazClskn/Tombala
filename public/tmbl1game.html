@@ -108,7 +108,7 @@
     <div class="card-container" id="cardContainer"></div>
 
     <div id="drawnNumber">Çekilen Sayı: -</div>
-    <button id="drawButton" disabled>Rastgele Sayı Çek</button>
+    <button id="drawButton">Sayı Çek</button>
 
     <div class="chat">
         <div class="messages" id="messages"></div>
@@ -152,7 +152,7 @@
         // Çekilen sayıyı göster
         socket.on('numberDrawn', ({ number }) => {
         drawnNumberElement.textContent = `Çekilen Sayı: ${number}`;
-        console.log("Çekilen Sayı: ", number); // Kontrol amaçlı
+        console.log(`Gelen Sayı: ${number}`)
         });
 
 

@@ -6,8 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = process.env.PORT || 10000;
-
+const PORT = process.env.PORT || 3000;
 
 // Sunucu ayarları
 app.use(express.static('public'));
@@ -16,12 +15,11 @@ app.use(express.static('public'));
 const lobbies = {}; // { lobbyName: { players: [], cards: {}, drawnNumbers: [] } }
 
 io.on('connection', (socket) => {
-    console.log('Socket.IO bağlantısı sağlandı:', socket.id);
-});
+    console.log('Bir kullanıcı bağlandı:', socket.id);
 
     // Oyuncu bir lobiye katılıyor
     socket.on('joinLobby', ({ lobby, playerName }) => {
-    console.log(`Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName}`);
+    console.log(Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName});
 
     if (!lobby || !playerName) {
         console.log('Sunucu: Eksik lobi veya oyuncu adı.');
@@ -30,7 +28,7 @@ io.on('connection', (socket) => {
     }
 
     if (!lobbies[lobby]) {
-        console.log(`Sunucu: Yeni bir lobi oluşturuldu - ${lobby}`);
+        console.log(Sunucu: Yeni bir lobi oluşturuldu - ${lobby});
         lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
     }
 
@@ -68,22 +66,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Sayı çekme olayı
-    socket.on('drawNumber', ({ lobby }) => {
-    if (!lobbies[lobby]) return;
-
-    const number = Math.floor(Math.random() * 90) + 1;
-
-    if (!lobbies[lobby].drawnNumbers.includes(number)) {
-        lobbies[lobby].drawnNumbers.push(number);
-        io.to(lobby).emit('numberDrawn', { number });
-        console.log(`Lobi ${lobby}: Çekilen sayı ${number}`);
-    }
-});
-
-
-
-
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {
         console.log('Bir kullanıcı ayrıldı:', socket.id);
@@ -102,7 +84,8 @@ io.on('connection', (socket) => {
             }
         }
     });
+});
 
 server.listen(PORT, () => {
-    console.log(`Sunucu ${PORT} portunda çalışıyor.`);
-});
+    console.log(Sunucu ${PORT} portunda çalışıyor.);
+}); 

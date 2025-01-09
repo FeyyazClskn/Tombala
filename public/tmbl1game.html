@@ -112,8 +112,6 @@
 
         const players = JSON.parse(sessionStorage.getItem('players')) || [];
         const cardContainer = document.getElementById('cardContainer');
-        const drawButton = document.getElementById('drawButton');
-        const drawnNumberDiv = document.getElementById('drawnNumber');
         const messages = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
 
@@ -134,36 +132,7 @@
         } else {
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
-
-drawButton.addEventListener('click', () => {
-    const lobby = sessionStorage.getItem('lobby');
-    const playerName = sessionStorage.getItem('playerName');
-
-    if (!lobby || !playerName) {
-        alert('Lobi veya oyuncu bilgisi eksik. Lütfen yeniden giriş yapın.');
-        window.location.href = 'index.html';
-        return;
-    }
-
-    console.log('İstemci: drawNumber olayı gönderiliyor. Lobi:', lobby);
-    socket.emit('drawNumber', { lobby });
-});
-
         
-        socket.on('newNumber', ({ number }) => {
-            drawnNumberDiv.textContent = `Çekilen Sayı: ${number}`;
-            markNumber(number);
-        });
-
-        function markNumber(number) {
-            const cells = document.querySelectorAll('.grid .cell');
-            cells.forEach(cell => {
-                if (parseInt(cell.textContent) === number) {
-                    cell.classList.add('matched');
-                }
-            });
-        }
-
         document.getElementById('sendMessageButton').addEventListener('click', () => {
             const message = messageInput.value;
             if (message) {

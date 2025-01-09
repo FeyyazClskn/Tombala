@@ -19,31 +19,30 @@ io.on('connection', (socket) => {
     console.log('Bir kullanıcı bağlandı:', socket.id);
 
     // Oyuncu bir lobiye katılıyor
-socket.on('joinLobby', ({ lobby, playerName }) => {
-    console.log(`Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName}`);
+    socket.on('joinLobby', ({ lobby, playerName }) => {
+        console.log(`Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName}`);
 
-    if (!lobby || !playerName) {
-        console.log('Sunucu: Eksik lobi veya oyuncu adı.');
-        socket.emit('error', { message: 'Eksik lobi veya oyuncu adı.' });
-        return;
-    }
+        if (!lobby || !playerName) {
+            console.log('Sunucu: Eksik lobi veya oyuncu adı.');
+            socket.emit('error', { message: 'Eksik lobi veya oyuncu adı.' });
+            return;
+        }
 
-    if (!lobbies[lobby]) {
-        console.log(`Sunucu: Yeni bir lobi oluşturuldu - ${lobby}`);
-        lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
-    }
+        if (!lobbies[lobby]) {
+            console.log(`Sunucu: Yeni bir lobi oluşturuldu - ${lobby}`);
+            lobbies[lobby] = { players: [], cards: {} };
+        }
 
-    const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
-    if (!isPlayerInLobby) {
-        lobbies[lobby].players.push({ id: socket.id, name: playerName });
-    }
+        const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
+        if (!isPlayerInLobby) {
+            lobbies[lobby].players.push({ id: socket.id, name: playerName });
+        }
 
-    socket.join(lobby);
-    io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+        socket.join(lobby);
+        io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
 
-    console.log(`Sunucu: Oyuncu ${playerName}, ${lobby} lobisine katıldı.`);
-});
-
+        console.log(`Sunucu: Oyuncu ${playerName}, ${lobby} lobisine katıldı.`);
+    });
 
     // Kart seçimi
     socket.on('selectCard', ({ lobby, card }) => {
@@ -67,31 +66,6 @@ socket.on('joinLobby', ({ lobby, playerName }) => {
             io.to(lobby).emit('startGame', { players });
         }
     });
-
-    // Sayı çekme işlemi
-socket.on('drawNumber', ({ lobby }) => {
-    console.log(`Sunucu: drawNumber olayı alındı. Lobi: ${lobby}`);
-
-    if (!lobby || !lobbies[lobby]) {
-        console.log(`Sunucu: Lobi "${lobby}" bulunamadı veya tanımlı değil.`);
-        socket.emit('error', { message: 'Lobi bulunamadı veya oyuncu doğru şekilde katılmamış.' });
-        return;
-    }
-
-    const lobbyData = lobbies[lobby];
-    let newNumber;
-
-    do {
-        newNumber = Math.floor(Math.random() * 90) + 1;
-    } while (lobbyData.drawnNumbers.includes(newNumber));
-
-    lobbyData.drawnNumbers.push(newNumber);
-    io.to(lobby).emit('newNumber', { number: newNumber });
-    console.log(`Sunucu: Çekilen sayı ${newNumber} lobisine gönderildi.`);
-});
-
-
-
 
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {

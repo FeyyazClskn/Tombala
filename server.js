@@ -32,7 +32,7 @@ io.on('connection', (socket) => {
             lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
         }
 
-        const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === .id);
+        const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
         if (!isPlayerInLobby) {
             lobbies[lobby].players.push({ id: .id, name: playerName });
         }

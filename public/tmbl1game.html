@@ -138,15 +138,6 @@
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
 
-        drawButton.addEventListener('click', () => {
-            socket.emit('drawNumber', { lobby });
-        });
-
-        socket.on('numberDrawn', ({ number }) => {
-            console.log(`Yeni sayı çekildi: ${number}`);
-            drawnNumberElement.textContent = `Çekilen Sayı: ${number}`;
-        });
-
         document.getElementById('sendMessageButton').addEventListener('click', () => {
             const message = messageInput.value;
             if (message) {

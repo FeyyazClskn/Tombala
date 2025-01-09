@@ -66,25 +66,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Sayı çekme
-    socket.on('drawNumber', ({ lobby }) => {
-        console.log(`Sayı çekme olayı alındı: Lobi = ${lobby}`);
-        if (!lobbies[lobby]) return;
-
-        const drawnNumbers = lobbies[lobby].drawnNumbers;
-        let number;
-
-        // 1 ile 90 arasında daha önce çekilmemiş bir sayı bul
-        do {
-            number = Math.floor(Math.random() * 90) + 1;
-        } while (drawnNumbers.includes(number));
-
-        drawnNumbers.push(number);
-        io.to(lobby).emit('numberDrawn', { number });
-
-        console.log(`Sunucu: ${lobby} lobisinde çekilen sayı: ${number}`);
-    });
-
     // Oyuncu ayrıldığında
     socket.on('disconnect', () => {
         console.log('Bir kullanıcı ayrıldı:', socket.id);

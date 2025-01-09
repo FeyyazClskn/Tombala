@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
     });
 
     // Kart seçimi
-    .on('selectCard', ({ lobby, card }) => {
+    socket.on('selectCard', ({ lobby, card }) => {
         if (!lobbies[lobby]) return;
 
         lobbies[lobby].cards[socket.id] = card;

@@ -7,7 +7,6 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 10000;
-const socket = io();
 
 
 // Sunucu ayarları

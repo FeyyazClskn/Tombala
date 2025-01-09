@@ -34,7 +34,7 @@ io.on('connection', (socket) => {
 
         const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
         if (!isPlayerInLobby) {
-            lobbies[lobby].players.push({ id: .id, name: playerName });
+            lobbies[lobby].players.push({ id: socket.id, name: playerName });
         }
 
         .join(lobby);

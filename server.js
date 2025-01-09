@@ -19,29 +19,29 @@ io.on('connection', (socket) => {
 
     // Oyuncu bir lobiye katılıyor
     socket.on('joinLobby', ({ lobby, playerName }) => {
-        console.log(`Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName}`);
+    console.log(`Sunucu: joinLobby olayı alındı. Lobi: ${lobby}, Oyuncu: ${playerName}`);
 
-        if (!lobby || !playerName) {
-            console.log('Sunucu: Eksik lobi veya oyuncu adı.');
-            socket.emit('error', { message: 'Eksik lobi veya oyuncu adı.' });
-            return;
-        }
+    if (!lobby || !playerName) {
+        console.log('Sunucu: Eksik lobi veya oyuncu adı.');
+        socket.emit('error', { message: 'Eksik lobi veya oyuncu adı.' });
+        return;
+    }
 
-        if (!lobbies[lobby]) {
-            console.log(`Sunucu: Yeni bir lobi oluşturuldu - ${lobby}`);
-            lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
-        }
+    if (!lobbies[lobby]) {
+        console.log(`Sunucu: Yeni bir lobi oluşturuldu - ${lobby}`);
+        lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
+    }
 
-        const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
-        if (!isPlayerInLobby) {
-            lobbies[lobby].players.push({ id: socket.id, name: playerName });
-        }
+    // Oyuncu zaten lobide mi?
+    const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
+    if (!isPlayerInLobby) {
+        lobbies[lobby].players.push({ id: socket.id, name: playerName }); // Doğru isim ekleniyor
+    }
 
-        socket.join(lobby);
-        io.to(lobby).emit('updatePlayers', lobbies[lobby].players);
+    socket.join(lobby);
+    io.to(lobby).emit('updatePlayers', lobbies[lobby].players); // İstemciye oyuncuları gönder
+});
 
-        console.log(`Sunucu: Oyuncu ${playerName}, ${lobby} lobisine katıldı.`);
-    });
 
     // Kart seçimi
     socket.on('selectCard', ({ lobby, card }) => {

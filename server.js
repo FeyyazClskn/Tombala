@@ -102,7 +102,6 @@ io.on('connection', (socket) => {
             }
         }
     });
-});
 
 server.listen(PORT, () => {
     console.log(`Sunucu ${PORT} portunda çalışıyor.`);

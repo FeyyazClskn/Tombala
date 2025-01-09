@@ -63,12 +63,15 @@
             const playerName = document.getElementById('playerName').value.trim();
             const errorMsg = document.getElementById('errorMsg');
             if (playerName) {
-                localStorage.setItem('playerName', playerName);
+                sessionStorage.setItem('playerName', playerName);
+                sessionStorage.setItem('lobby', lobby);
                 window.location.href = 'lobi.html';
             } else {
                 errorMsg.textContent = 'Lütfen oyuncu adınızı girin!';
             }
         }
+
+
     </script>
 </body>
 </html>

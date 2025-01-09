@@ -61,6 +61,17 @@
             margin-top: 20px;
             color: #333;
         }
+        #drawButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
         .chat {
             margin-top: 20px;
             max-width: 400px;
@@ -95,8 +106,9 @@
 <body>
     <h1>Tombala Oyun</h1>
     <div class="card-container" id="cardContainer"></div>
-    <button id="drawButton">Sayı Çek</button>
-    <div id="drawnNumber"></div>
+
+    <div id="drawnNumber">Çekilen Sayı: -</div>
+    <button id="drawButton" disabled>Rastgele Sayı Çek</button>
 
     <div class="chat">
         <div class="messages" id="messages"></div>
@@ -108,7 +120,6 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        console.log("tmbl1game.html yüklendi.");
         const socket = io();
 
         const lobby = sessionStorage.getItem('lobby');
@@ -120,6 +131,7 @@
         const messages = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
 
+        // Kartları oluştur
         players.forEach(player => {
             const cardElement = document.createElement('div');
             cardElement.className = 'card';
@@ -132,29 +144,17 @@
             cardContainer.appendChild(cardElement);
         });
 
-        if (players.length === 2) {
-            drawButton.disabled = false;
-        } else {
-            alert("Oyun başlaması için iki oyuncu gerekli!");
-        }
+        // Rastgele sayı çekme
+        drawButton.addEventListener('click', () => {
+            socket.emit('drawNumber', { lobby }); // Sunucuya sayı çekildiğini bildir
+        });
 
-        const drawnNumbers = [];
-            drawButton.addEventListener('click', () => {
-            if (drawnNumbers.length >= 90) {
-                alert("Tüm sayılar çekildi!");
-                drawButton.disabled = true;
-                return;
-            }
+        // Çekilen sayıyı göster
+        socket.on('numberDrawn', ({ number }) => {
+            drawnNumberElement.textContent = `Çekilen Sayı: ${number}`;
+        });
 
-            let randomNumber;
-            do {
-                randomNumber = Math.floor(Math.random() * 90) + 1; // 1-90 arasında sayı
-            } while (drawnNumbers.includes(randomNumber));
-
-            drawnNumbers.push(randomNumber);
-            drawnNumberElement.textContent = `Çekilen Sayı: ${randomNumber}`;
-        })
-
+        // Mesaj gönder
         document.getElementById('sendMessageButton').addEventListener('click', () => {
             const message = messageInput.value;
             if (message) {
@@ -163,12 +163,20 @@
             }
         });
 
+        // Yeni mesajları al
         socket.on('newMessage', ({ playerName, message }) => {
             const messageElement = document.createElement('div');
             messageElement.textContent = `${playerName}: ${message}`;
             messages.appendChild(messageElement);
             messages.scrollTop = messages.scrollHeight;
         });
+
+        // Lobiye katılım kontrolü
+        if (players.length === 2) {
+            drawButton.disabled = false;
+        } else {
+            alert("Oyun başlaması için iki oyuncu gerekli!");
+        }
     </script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-// --- server.js ---
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -30,7 +29,7 @@ io.on('connection', (socket) => {
 
         if (!lobbies[lobby]) {
             console.log(`Sunucu: Yeni bir lobi oluşturuldu - ${lobby}`);
-            lobbies[lobby] = { players: [], cards: {} };
+            lobbies[lobby] = { players: [], cards: {}, drawnNumbers: [] };
         }
 
         const isPlayerInLobby = lobbies[lobby].players.some(p => p.id === socket.id);
@@ -65,6 +64,24 @@ io.on('connection', (socket) => {
 
             io.to(lobby).emit('startGame', { players });
         }
+    });
+
+    // Sayı çekme
+    socket.on('drawNumber', ({ lobby }) => {
+        if (!lobbies[lobby]) return;
+
+        const drawnNumbers = lobbies[lobby].drawnNumbers;
+        let number;
+
+        // 1 ile 90 arasında daha önce çekilmemiş bir sayı bul
+        do {
+            number = Math.floor(Math.random() * 90) + 1;
+        } while (drawnNumbers.includes(number));
+
+        drawnNumbers.push(number);
+        io.to(lobby).emit('numberDrawn', { number });
+
+        console.log(`Sunucu: ${lobby} lobisinde çekilen sayı: ${number}`);
     });
 
     // Oyuncu ayrıldığında

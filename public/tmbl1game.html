@@ -108,16 +108,18 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        console.log("tmbl1game.html yüklendi.");
         const socket = io();
+
+        const lobby = sessionStorage.getItem('lobby');
+        const playerName = sessionStorage.getItem('playerName');
         const players = JSON.parse(sessionStorage.getItem('players')) || [];
         const cardContainer = document.getElementById('cardContainer');
         const drawButton = document.getElementById('drawButton');
         const drawnNumberElement = document.getElementById('drawnNumber');
         const messages = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
-        console.log("tmbl1game.html yüklendi.");
 
-        // Kartları oluşturma
         players.forEach(player => {
             const cardElement = document.createElement('div');
             cardElement.className = 'card';
@@ -130,31 +132,25 @@
             cardContainer.appendChild(cardElement);
         });
 
-        // Sayı çekme butonu etkinleştirme
         if (players.length === 2) {
             drawButton.disabled = false;
         } else {
             alert("Oyun başlaması için iki oyuncu gerekli!");
         }
 
-        // Sayı çekme işlemi
         drawButton.addEventListener('click', () => {
-            const lobby = sessionStorage.getItem('lobby');
             socket.emit('drawNumber', { lobby });
         });
 
-        // Yeni sayı çekildiğinde güncelleme
-            socket.on('numberDrawn', ({ number }) => {
+        socket.on('numberDrawn', ({ number }) => {
             console.log(`Yeni sayı çekildi: ${number}`);
             drawnNumberElement.textContent = `Çekilen Sayı: ${number}`;
         });
 
-
-        // Mesaj gönderme
         document.getElementById('sendMessageButton').addEventListener('click', () => {
             const message = messageInput.value;
             if (message) {
-                socket.emit('sendMessage', { lobby: sessionStorage.getItem('lobby'), message });
+                socket.emit('sendMessage', { lobby, message });
                 messageInput.value = '';
             }
         });

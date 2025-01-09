@@ -151,8 +151,10 @@
 
         // Çekilen sayıyı göster
         socket.on('numberDrawn', ({ number }) => {
-            drawnNumberElement.textContent = `Çekilen Sayı: ${number}`;
+        drawnNumberElement.textContent = `Çekilen Sayı: ${number}`;
+        console.log("Çekilen Sayı: ", number); // Kontrol amaçlı
         });
+
 
         // Mesaj gönder
         document.getElementById('sendMessageButton').addEventListener('click', () => {

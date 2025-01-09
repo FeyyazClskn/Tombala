@@ -9,7 +9,7 @@ const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 
 // Sunucu ayarları
-app.use(express.static(''));
+app.use(express.static('index'));
 
 // Lobi yönetimi
 const lobbies = {}; // { lobbyName: { players: [], cards: {}, drawnNumbers: [] } }
